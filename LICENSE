@@ -1,0 +1,19 @@
+Copyright (c) 2026 ssp-bkt. All rights reserved.
+
+This repository is public so that the website can be hosted on GitHub Pages.
+Public visibility does NOT grant any license. No part of this source code,
+design, or artwork may be copied, modified, redistributed, or used for
+commercial purposes without prior written permission from the copyright holder.
+
+Third-party components keep their own licenses:
+- Noto Color Emoji, Anuphan, Caveat, Charm, Dancing Script, Pacifico, Sriracha
+  fonts: SIL Open Font License 1.1 (loaded from Google Fonts)
+- MediaPipe Tasks Vision and Face Landmarker model: Apache License 2.0
+  (loaded from jsDelivr and Google Cloud Storage)
+
+---
+
+สงวนลิขสิทธิ์ © 2026 ssp-bkt
+ที่เก็บโค้ดนี้เปิดเป็นสาธารณะเพื่อใช้โฮสต์เว็บไซต์บน GitHub Pages เท่านั้น
+การเปิดให้ดูได้ไม่ถือเป็นการอนุญาตให้นำโค้ด ดีไซน์ หรือภาพใด ๆ ไปคัดลอก ดัดแปลง
+เผยแพร่ซ้ำ หรือใช้เชิงพาณิชย์ โดยไม่ได้รับอนุญาตเป็นลายลักษณ์อักษรจากเจ้าของลิขสิทธิ์

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ssp-bkt.github.io/photobooth/sitemap.xml
