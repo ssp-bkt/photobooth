@@ -198,6 +198,32 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .about{margin:32px auto 0;max-width:720px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.7}
 .about h1{font-size:16px;font-weight:600;color:var(--ink2);margin:0 0 6px}
 .about p{margin:0 0 6px}
+/* visit counter pill */
+.visits{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:6px 12px;white-space:nowrap}
+.visits b{color:var(--ink);font-weight:600}
+.visits i{width:7px;height:7px;border-radius:50%;background:#3cbf8f;box-shadow:0 0 0 3px rgba(60,191,143,.22);animation:livepulse 2.2s infinite}
+@keyframes livepulse{50%{box-shadow:0 0 0 6px rgba(60,191,143,0)}}
+@media (prefers-reduced-motion:reduce){.visits i{animation:none}}
+.visits:not([hidden])+.steps{margin-left:16px}
+/* event mode */
+.eventbar{position:relative;z-index:1;max-width:1240px;margin:0 auto 12px;padding:0 20px;font-size:14px;color:var(--ink2)}
+.eventbar>div{display:inline-flex;gap:6px;align-items:center;background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:7px 14px}
+.eventbar b{font-weight:600;color:var(--ink)}
+dialog#maker{border:0;border-radius:24px;padding:0;max-width:940px;width:calc(100% - 24px);max-height:calc(100vh - 24px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.3)}
+dialog#maker::backdrop{background:rgba(20,16,24,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.mk{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:22px;padding:24px}
+@media (max-width:760px){.mk{grid-template-columns:minmax(0,1fr);padding:18px}}
+.mk h2{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:32px;margin:0 0 4px}
+.mk label.f{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:14px 0 6px}
+.mk select{width:100%;font:inherit;font-size:15px;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.mkrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mkprev{background:var(--chip);border-radius:16px;display:flex;align-items:center;justify-content:center;padding:14px;min-height:240px}
+.mkprev canvas{max-width:100%;max-height:300px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.15))}
+.mkqr{display:flex;gap:12px;align-items:center;margin-top:12px}
+.mkqr .btn{flex-direction:column;gap:2px;line-height:1.3}
+.mkqr .btn small{color:var(--muted);font-size:11.5px}
+#mkQR{width:104px;height:104px;image-rendering:pixelated;border-radius:10px;flex:none}
+.mkclose{position:absolute;top:14px;right:14px;z-index:2}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(90px);background:var(--on);color:var(--on-ink);
   padding:10px 18px;border-radius:99px;font-size:14px;transition:transform .25s;z-index:9;max-width:calc(100% - 32px);text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -207,8 +233,10 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 <body>
 <header>
   <div class="brand">chaechae<img class="spark" data-deco="chromeSparkle" alt=""><small>photobooth online<br>ถ่ายเลย ไม่ต้องลงแอป</small></div>
+  <div class="visits" id="visits" hidden title="จำนวนครั้งที่มีคนเข้ามาใช้ chaechae"><i></i>ใช้ไปแล้ว <b>0</b> ครั้ง</div>
   <div class="steps"><b id="st1" class="on">1 ถ่ายรูป</b><span class="sep"></span><b id="st2">2 แต่งรูป</b></div>
 </header>
+<div class="eventbar" id="eventBar" hidden></div>
 <main>
   <!-- ===== BOOTH ===== -->
   <section id="booth" class="grid">
@@ -352,9 +380,40 @@ input[type=range]{width:100%;accent-color:var(--ink)}
     <h1>ถ่ายโฟโต้บูธออนไลน์ ฟรี ไม่ต้องลงแอป</h1>
     <p>chaechae (แชะแชะ) คือตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ ถ่ายรูปแบบโฟโต้บูธเกาหลี 4 ช่อง แถบ 2–3 ช่อง หรือตาราง 2×2 ได้ทันทีผ่านมือถือ iPad หรือคอมพิวเตอร์ เลือกกรอบน่ารัก ใส่พร็อพติดหน้า สติ๊กเกอร์ ข้อความตัวเขียน ปรับสีรูป แล้วดาวน์โหลดหรือแชร์ได้เลย</p>
     <p>รูปทั้งหมดประมวลผลในเครื่องของคุณ ไม่มีการอัปโหลดรูปขึ้นเซิร์ฟเวอร์</p>
+    <button class="btn" id="openMaker" style="margin-top:10px">✦ สำหรับร้านค้า / อีเวนต์ — สร้างลิงก์และ QR เฉพาะงาน</button>
   </footer>
 </main>
 <div class="toast" id="toast"></div>
+
+<dialog id="maker" aria-label="สร้างลิงก์อีเวนต์">
+  <button class="btn mkclose" id="mkClose" aria-label="ปิด">✕</button>
+  <div class="mk">
+    <div>
+      <h2>สร้างลิงก์อีเวนต์</h2>
+      <div class="hint" style="margin:0 0 4px">ตั้งกรอบเฉพาะงานให้ลูกค้า แล้วส่งลิงก์หรือพิมพ์ QR ให้แขกสแกนถ่ายรูป</div>
+      <label class="f" for="mkName">ชื่องาน *</label><input type="text" id="mkName" maxlength="40" placeholder="เช่น Jane & Golf Wedding">
+      <label class="f" for="mkSub">ข้อความรอง (วันที่ / สถานที่)</label><input type="text" id="mkSub" maxlength="50" placeholder="เช่น 14.02.2027 · กรุงเทพ">
+      <label class="f">ฟอนต์ชื่องาน</label><div class="chips" id="mkFonts"></div>
+      <div class="mkrow">
+        <div><label class="f" for="mkFrame">กรอบ</label><select id="mkFrame"></select></div>
+        <div><label class="f" for="mkLayout">ช่อง</label><select id="mkLayout"></select></div>
+        <div><label class="f" for="mkShape">ทรงรูป</label><select id="mkShape"></select></div>
+      </div>
+      <label class="switch" style="margin-top:12px">ล็อกจำนวนช่อง (แขกเปลี่ยนไม่ได้)<input type="checkbox" id="mkLock" checked></label>
+      <label class="f" for="mkLogo">ลิงก์รูปโลโก้ (ไม่ใส่ก็ได้)</label><input type="text" id="mkLogo" placeholder="https://… .png">
+    </div>
+    <div>
+      <div class="mkprev"><canvas id="mkPrev"></canvas></div>
+      <div id="mkOut" hidden>
+        <label class="f" for="mkLink">ลิงก์สำหรับงานนี้</label>
+        <input type="text" id="mkLink" readonly>
+        <div class="row" style="margin-top:8px"><button class="btn dark" id="mkCopy" style="flex:1">คัดลอกลิงก์</button><button class="btn" id="mkOpen" style="flex:1">ลองเปิดดู</button></div>
+        <div class="mkqr"><canvas id="mkQR"></canvas><button class="btn" id="mkCard" style="flex:1">ดาวน์โหลดการ์ด QR<br><small>สำหรับพิมพ์วางโต๊ะ</small></button></div>
+      </div>
+      <div class="hint" id="mkHint">ใส่ชื่องานเพื่อสร้างลิงก์</div>
+    </div>
+  </div>
+</dialog>
 
 <script>
 const $ = s => document.querySelector(s);
@@ -425,7 +484,7 @@ const MEME_TEMPLATES = [
 /* ================= STATE ================= */
 const state = {layout:'strip4', filter:'normal', timer:3, mirror:true, facing:'user', shots:[], crops:[], busy:false, cancel:false};
 const ed = {
-  frame:'white', shape:'round', frameCat:'ทั้งหมด', dateFmt:'num', title:'', titleFont:'script',
+  frame:'white', shape:'round', frameCat:'ทั้งหมด', dateFmt:'num', title:'', titleFont:'script', subtitle:'', logo:null,
   objects:[], strokes:[], sel:null, tab:'color', adj:null, proc:[], cropSel:0,
   pen:{color:'#ff3d7f', size:7, erase:false},
   txt:{color:'#ffffff', font:'script', style:'shadow'},
@@ -1128,7 +1187,10 @@ function drawBase(c,o){
   else { c.fillStyle=sp.color||F.ink; c.globalAlpha=.5; }
   const tw=c.measureText('chaechae').width, sx=sp.align==='right'?sp.x+2:sp.align==='center'?sp.x+tw/2+12:sp.x+tw+12;
   c.fillText('chaechae', sp.align==='right'?sp.x-16:sp.x, sp.y); sparkleP(c, sp.align==='right'?sx-6:sx, sp.y-5, 6); c.fill(); c.restore();
-  if(o.title){ c.save(); c.font=fontCSS(o.titleFont,46); c.fillStyle=F.ink; c.textAlign='center'; c.textBaseline='middle'; c.fillText(o.title,W/2,fy-4); c.restore(); }
+  if(o.title){ c.save(); let fs=46; c.font=fontCSS(o.titleFont,fs); const maxW=W-PAD*2-(o.logo?160:0)*2; while(c.measureText(o.title).width>maxW && fs>24){ fs-=2; c.font=fontCSS(o.titleFont,fs); }
+    c.fillStyle=F.ink; c.textAlign='center'; c.textBaseline='middle'; c.fillText(o.title,W/2,o.subtitle?fy-16:fy-4); c.restore(); }
+  if(o.subtitle){ c.save(); c.font='500 21px Anuphan, sans-serif'; c.fillStyle=F.ink; c.globalAlpha=.7; c.textAlign='center'; c.textBaseline='middle'; c.fillText(o.subtitle,W/2,fy+24); c.restore(); }
+  if(o.logo){ const ar=o.logo.width/o.logo.height; let lh=64, lw=lh*ar; if(lw>140){ lw=140; lh=lw/ar; } c.drawImage(o.logo,PAD,fy-lh/2,lw,lh); }
   if(o.date){ c.save(); c.font='600 32px Caveat, Sriracha, cursive'; c.fillStyle=F.ink; c.globalAlpha=.72; c.textAlign='right'; c.textBaseline='alphabetic'; c.fillText(o.date,W-PAD,H-28); c.restore(); }
 }
 
@@ -1160,7 +1222,7 @@ function setFrame(id){
 function render(){
   const d=dims(), c=ctx;
   c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,d.W,d.H);
-  drawBase(c,{...d, F:curFrame(), S:curShape(), imgs:ed.proc, title:ed.title, titleFont:ed.titleFont, date:dateText()});
+  drawBase(c,{...d, F:curFrame(), S:curShape(), imgs:ed.proc, title:ed.title, titleFont:ed.titleFont, subtitle:ed.subtitle, logo:ed.logo, date:dateText()});
   lctx.clearRect(0,0,d.W,d.H);
   for(const s of ed.strokes){ lctx.save(); lctx.globalCompositeOperation=s.erase?'destination-out':'source-over'; lctx.strokeStyle=s.color; lctx.lineWidth=s.size; lctx.lineCap=lctx.lineJoin='round';
     lctx.beginPath(); s.pts.forEach(([x,y],j)=>j?lctx.lineTo(x,y):lctx.moveTo(x,y)); if(s.pts.length===1) lctx.lineTo(s.pts[0][0]+.1,s.pts[0][1]); lctx.stroke(); lctx.restore(); }
@@ -1422,8 +1484,105 @@ async function share(){ const b=await exportBlob(), f=new File([b], fileName(), 
   if(navigator.canShare && navigator.canShare({files:[f]})){ try{ await navigator.share({files:[f], title:'chaechae'}); }catch(e){} }
   else { toast('เบราว์เซอร์นี้แชร์ตรงไม่ได้ — ดาวน์โหลดให้แทนนะ'); await download(); } }
 
+/* ================= EVENT MODE =================
+   An event's settings live entirely in the link (?e=<base64url JSON>), so it stays free — no server. */
+const b64e=s=>{ const b=new TextEncoder().encode(s); let t=''; b.forEach(x=>t+=String.fromCharCode(x)); return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
+const b64d=s=>{ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return new TextDecoder().decode(Uint8Array.from(atob(s),ch=>ch.charCodeAt(0))); };
+function readEvent(){ try{ const p=new URLSearchParams(location.search).get('e'); if(!p) return null; const c=JSON.parse(b64d(p)); return c&&typeof c.n==='string'&&c.n.trim()?c:null; }catch(e){ return null; } }
+const EVENT=readEvent();
+function loadLogo(url,cb){ if(!/^https:\/\//.test(url||'')) return cb(null); const im=new Image(); im.crossOrigin='anonymous'; im.onload=()=>cb(im); im.onerror=()=>cb(null); im.src=url; }
+function applyEvent(){
+  if(!EVENT) return; const E=EVENT;
+  if(LAYOUTS[E.l]) state.layout=E.l;
+  if(FRAMES.some(f=>f.id===E.f)) ed.frame=E.f;
+  if(SHAPES.some(s=>s.id===E.sh)) ed.shape=E.sh;
+  if(TEXT_FONTS[E.ft]) ed.titleFont=E.ft;
+  ed.title=E.n.slice(0,40); ed.subtitle=String(E.s||'').slice(0,50); if(ed.subtitle) ed.dateFmt='none';
+  loadLogo(E.logo, im=>{ ed.logo=im; if(!$('#editor').hidden) render(); });
+}
+function afterEventUI(){
+  if(!EVENT) return;
+  $('#title').value=ed.title;
+  const bar=$('#eventBar'); bar.hidden=false; bar.innerHTML='<div>✦ กำลังถ่ายในงาน <b></b><span></span></div>';
+  bar.querySelector('b').textContent=ed.title; bar.querySelector('span').textContent=ed.subtitle?' · '+ed.subtitle:'';
+  if(EVENT.lock){ $('#btabs [data-tab="layout"]').hidden=true; $('#btabs [data-tab="filter"]').click(); }
+  document.title=`${ed.title} — chaechae`;
+}
+
+/* ---- maker (for shops / organisers) ---- */
+const mk={font:'script', built:false, logoUrl:'', logoImg:null};
+let qrLib=null;
+function loadQR(){ return qrLib || (qrLib=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'; s.onload=()=>res(window.qrcode); s.onerror=()=>{ qrLib=null; rej(new Error('qr')); }; document.head.appendChild(s); })); }
+async function qrCanvas(text,cell){ const qrcode=await loadQR(); const q=qrcode(0,'M'); q.addData(text); q.make(); const n=q.getModuleCount(), m=4, cv=document.createElement('canvas');
+  cv.width=cv.height=(n+m*2)*cell; const x=cv.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,cv.width,cv.height); x.fillStyle='#161616';
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) x.fillRect((c+m)*cell,(r+m)*cell,cell,cell); return cv; }
+function mkCfg(){ const c={n:$('#mkName').value.trim(), s:$('#mkSub').value.trim(), ft:mk.font, f:$('#mkFrame').value, l:$('#mkLayout').value, sh:$('#mkShape').value};
+  if($('#mkLock').checked) c.lock=1; const lg=$('#mkLogo').value.trim(); if(/^https:\/\//.test(lg)) c.logo=lg; if(!c.s) delete c.s; return c; }
+const mkLink=c=>location.origin+location.pathname+'?e='+b64e(JSON.stringify(c));
+function buildMaker(){
+  if(mk.built) return; mk.built=true;
+  const fs=$('#mkFrame'); FRAME_CATS.slice(1).forEach(cat=>{ const g=document.createElement('optgroup'); g.label=cat; FRAMES.filter(f=>f.cat===cat).forEach(f=>g.appendChild(new Option(f.name,f.id))); fs.appendChild(g); });
+  Object.entries(LAYOUTS).forEach(([k,L])=>$('#mkLayout').appendChild(new Option(L.name,k))); $('#mkLayout').value='strip4';
+  SHAPES.forEach(s=>$('#mkShape').appendChild(new Option(s.name,s.id)));
+  const fc=$('#mkFonts'); Object.entries(TEXT_FONTS).forEach(([k,F])=>{ const b=chip(F.name,k===mk.font,()=>{ mk.font=k; setOn(fc,b); mkUpdate(); }); b.style.fontFamily=F.family; fc.appendChild(b); });
+  ['mkName','mkSub','mkFrame','mkLayout','mkShape','mkLock'].forEach(id=>{ $('#'+id).addEventListener('input',mkUpdate); $('#'+id).addEventListener('change',mkUpdate); });
+  $('#mkLogo').addEventListener('change',()=>{ const u=$('#mkLogo').value.trim(); loadLogo(u,im=>{ mk.logoImg=im; if(u && !im) $('#mkHint').textContent='โหลดโลโก้จากลิงก์นี้ไม่ได้ (ต้องเป็นลิงก์รูป https ที่อนุญาตให้เว็บอื่นใช้)'; mkUpdate(); }); });
+  $('#mkClose').onclick=()=>$('#maker').close();
+  $('#mkCopy').onclick=async()=>{ const b=$('#mkCopy'); try{ await navigator.clipboard.writeText($('#mkLink').value); }catch(e){ $('#mkLink').select(); document.execCommand('copy'); } b.textContent='คัดลอกแล้ว ✓'; setTimeout(()=>b.textContent='คัดลอกลิงก์',1600); };
+  $('#mkOpen').onclick=()=>window.open($('#mkLink').value,'_blank','noopener');
+  $('#mkCard').onclick=downloadQRCard;
+}
+let mkQRToken=0;
+async function mkUpdate(){
+  const c=mkCfg(), keep=state.layout; state.layout=c.l;
+  const F=FRAMES.find(f=>f.id===c.f), S=SHAPES.find(s=>s.id===c.sh), d=dims(F), cv=$('#mkPrev'), s=Math.min(280/d.W,300/d.H);
+  cv.width=Math.round(d.W*s); cv.height=Math.round(d.H*s); const x=cv.getContext('2d'); x.setTransform(s,0,0,s,0,0);
+  drawBase(x,{...d,F,S,imgs:[],title:c.n||'ชื่องานของคุณ',titleFont:c.ft,subtitle:c.s,logo:mk.logoImg,date:''});
+  state.layout=keep;
+  $('#mkOut').hidden=!c.n; $('#mkHint').hidden=!!c.n && !$('#mkHint').textContent.startsWith('โหลดโลโก้');
+  if(!c.n) return;
+  const link=mkLink(c); $('#mkLink').value=link;
+  const tk=++mkQRToken; try{ const q=await qrCanvas(link,4); if(tk!==mkQRToken) return; const t=$('#mkQR'); t.width=q.width; t.height=q.height; t.getContext('2d').drawImage(q,0,0); }catch(e){ $('#mkHint').hidden=false; $('#mkHint').textContent='สร้าง QR ไม่ได้ — เช็กอินเทอร์เน็ตแล้วลองใหม่ (ลิงก์ยังใช้ได้)'; }
+}
+function openMaker(){ buildMaker(); $('#maker').showModal(); mkUpdate(); }
+function saveBlob(b,name){ const url=URL.createObjectURL(b), a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
+async function downloadQRCard(){
+  const c=mkCfg(); if(!c.n) return; const link=mkLink(c);
+  try{ await Promise.all([document.fonts.load(fontCSS(c.ft,96)), document.fonts.load('italic 44px "Instrument Serif"'), document.fonts.load('600 44px Anuphan')]); }catch(e){}
+  const q=await qrCanvas(link,16), W=1080, H=1350, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const x=cv.getContext('2d');
+  auraBg(x,W,H,'#fff7f2',['#ffc4d8','#e2d4ff','#ffe2b8']);
+  for(const [k,px,py,sz,r] of [['bowPink',140,110,160,-.3],['chromeStar',955,105,130,.25],['pixelHeart',140,1190,130,-.15],['cherries',950,1180,140,.2],['chromeSparkle',835,60,60,0]]){ x.save(); x.translate(px,py); x.rotate(r); x.scale(sz,sz); ART[k](x); x.restore(); }
+  x.textAlign='center'; x.textBaseline='alphabetic'; x.fillStyle='#161616';
+  x.font='600 42px Anuphan, sans-serif'; x.fillText('ถ่ายรูปกับเราได้เลย',W/2,190);
+  let fs=100; x.font=fontCSS(c.ft,fs); while(x.measureText(c.n).width>W-160 && fs>44){ fs-=4; x.font=fontCSS(c.ft,fs); } x.fillText(c.n,W/2,310);
+  if(c.s){ x.font='500 34px Anuphan, sans-serif'; x.fillStyle='#6b6570'; x.fillText(c.s,W/2,375); }
+  const qs=560, bx=(W-qs-64)/2, by=420; x.save(); x.shadowColor='rgba(0,0,0,.12)'; x.shadowBlur=30; x.shadowOffsetY=10; x.fillStyle='#fff'; roundRect(x,bx,by,qs+64,qs+64,44); x.fill(); x.restore();
+  x.imageSmoothingEnabled=false; x.drawImage(q,(W-qs)/2,by+32,qs,qs); x.imageSmoothingEnabled=true;
+  x.fillStyle='#161616'; x.font='italic 400 52px "Instrument Serif", serif'; x.fillText('scan me ✦',W/2,1112);
+  x.font='500 28px Anuphan, sans-serif'; x.fillStyle='#6b6570'; x.fillText('สแกนด้วยกล้องมือถือ → ถ่าย แต่ง เซฟรูปได้ทันที ไม่ต้องลงแอป',W/2,1166);
+  x.font='700 36px "Dancing Script", cursive'; x.fillStyle='rgba(22,22,22,.5)'; x.fillText('chaechae',W/2,1290);
+  cv.toBlob(b=>saveBlob(b,`chaechae-qr-${c.n.replace(/[^\w฀-๿-]+/g,'-').slice(0,30)}.png`),'image/png');
+}
+
+/* ---- visit counter (free Abacus counter; counts once per browser session, only on the live site) ---- */
+async function visitCounter(){
+  const live=/github\.io$/.test(location.hostname), url='https://abacus.jasoncameron.dev';
+  let counted=false; try{ counted=sessionStorage.getItem('cc-counted')==='1'; }catch(e){}
+  const path=(live && !counted)?'hit':'get';
+  try{
+    const r=await fetch(`${url}/${path}/chaechae-photobooth/visits`); if(!r.ok) return;
+    const j=await r.json(); if(typeof j.value!=='number') return;
+    if(path==='hit'){ try{ sessionStorage.setItem('cc-counted','1'); }catch(e){} }
+    $('#visits b').textContent=j.value.toLocaleString('th-TH'); $('#visits').hidden=false;
+  }catch(e){ /* counter offline — just hide it */ }
+}
+
 /* ================= INIT ================= */
-buildBoothUI(); buildEditorUI(); renderSummary();
+visitCounter();
+applyEvent();
+buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
+$('#openMaker').onclick=openMaker;
+if(new URLSearchParams(location.search).has('maker')) openMaker();
 document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));$('#shoot').onclick=shoot;
 $('#camShoot').onclick=e=>{ e.stopPropagation(); shoot(); };
 $('#camFlip').onclick=e=>{ e.stopPropagation(); flipCam(); };
