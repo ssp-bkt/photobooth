@@ -61,7 +61,10 @@ header,main{position:relative;z-index:1}
 .deco.d2{top:-24px;right:34px;width:54px;height:54px;transform:rotate(12deg)}
 .deco.d3{bottom:70px;right:-20px;transform:rotate(-8deg)}
 .deco.d4{bottom:-16px;left:40%;width:48px;height:48px;transform:rotate(10deg)}
+@media (max-width:920px){.deco.d1{left:-6px}.deco.d3{right:-4px}}
 @media (max-width:600px){.deco{width:44px;height:44px}.deco.d3,.deco.d4{display:none}}
+html,body{overflow-x:hidden}
+@supports (overflow:clip){html,body{overflow-x:clip}}
 button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 
 header{max-width:1240px;margin:0 auto;padding:18px 20px 8px;display:flex;align-items:center;gap:16px}
@@ -1249,7 +1252,7 @@ let drag=null; const pointers=new Map();
 function pt(e){ const r=stage.getBoundingClientRect(); return {x:(e.clientX-r.left)*stage.width/r.width, y:(e.clientY-r.top)*stage.height/r.height, k:stage.width/r.width}; }
 function pinchInfo(){ const [a,b]=[...pointers.values()]; return {d:Math.max(1,dist(a,b)), a:Math.atan2(b.y-a.y,b.x-a.x)}; }
 stage.addEventListener('pointerdown', e=>{
-  const p=pt(e); stage.setPointerCapture(e.pointerId); pointers.set(e.pointerId,p);
+  const p=pt(e); try{ stage.setPointerCapture(e.pointerId); }catch(_){ /* pointer already gone — keep handling the gesture */ } pointers.set(e.pointerId,p);
   if(pointers.size===2){
     if(ed.tab==='crop'){ drag={mode:'czoom', i:ed.cropSel, d0:pinchInfo().d, z0:crop(ed.cropSel).z}; return; }
     if(ed.tab!=='draw' && ed.sel){ const pi=pinchInfo(); drag={mode:'pinch', o:ed.sel, d0:pi.d, a0:pi.a, s0:ed.sel.size, r0:ed.sel.rot, moved:false}; } return; }
@@ -1417,7 +1420,7 @@ async function download(){ const b=await exportBlob(), url=URL.createObjectURL(b
   a.href=url; a.download=fileName(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000); toast('เซฟรูปแล้ว'); }
 async function share(){ const b=await exportBlob(), f=new File([b], fileName(), {type:'image/png'});
   if(navigator.canShare && navigator.canShare({files:[f]})){ try{ await navigator.share({files:[f], title:'chaechae'}); }catch(e){} }
-  else { toast('เบราว์เซอร์นี้แชร์ตรงไม่ได้ — ดาวน์โหลดให้แทนนะ'); download(); } }
+  else { toast('เบราว์เซอร์นี้แชร์ตรงไม่ได้ — ดาวน์โหลดให้แทนนะ'); await download(); } }
 
 /* ================= INIT ================= */
 buildBoothUI(); buildEditorUI(); renderSummary();
