@@ -54,13 +54,7 @@ body{color:var(--ink);font-family:Anuphan,system-ui,sans-serif;-webkit-font-smoo
 /* film-grain overlay */
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.08;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-header,main,.marquee{position:relative;z-index:1}
-.marquee{overflow:hidden;background:var(--on);color:var(--on-ink);white-space:nowrap;margin:4px 0 16px;transform:rotate(-.6deg);box-shadow:0 6px 18px rgba(0,0,0,.08)}
-.marquee .track{display:inline-flex;padding:7px 0;animation:mq 42s linear infinite}
-.marquee span{display:inline-flex;align-items:center;gap:22px;padding-right:22px;font-family:"Instrument Serif",Anuphan,serif;font-style:italic;font-size:18px;letter-spacing:.01em}
-.marquee span::after{content:"✦";font-style:normal;font-size:13px;color:var(--accent)}
-@keyframes mq{to{transform:translateX(-50%)}}
-@media (prefers-reduced-motion:reduce){.marquee .track{animation:none}}
+header,main{position:relative;z-index:1}
 .camcard{position:relative}
 .deco{position:absolute;width:66px;height:66px;pointer-events:none;z-index:4;filter:drop-shadow(0 5px 10px rgba(0,0,0,.16))}
 .deco.d1{top:-20px;left:-18px;transform:rotate(-14deg)}
@@ -87,7 +81,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .sec{margin-bottom:22px}
 
 /* camera */
-.cam{position:relative;aspect-ratio:4/3;max-height:calc(100vh - 330px);min-height:260px;border-radius:18px;overflow:hidden;background:#0b0b0c;isolation:isolate}
+.cam{position:relative;aspect-ratio:4/3;max-height:calc(100vh - 290px);min-height:260px;border-radius:18px;overflow:hidden;background:#0b0b0c;isolation:isolate}
 .cam video{width:100%;height:100%;object-fit:cover;display:block}
 .mirror{transform:scaleX(-1)}
 #fx{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
@@ -149,7 +143,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 /* editor */
 .stagewrap{display:flex;justify-content:center;align-items:flex-start;padding:28px;border-radius:24px;min-height:320px;
   background-color:var(--chip);background-image:radial-gradient(var(--line) 1px,transparent 1.2px);background-size:18px 18px}
-#stage{max-width:100%;max-height:calc(100vh - 215px);width:auto;height:auto;touch-action:none;filter:drop-shadow(0 16px 28px rgba(0,0,0,.16))}
+#stage{max-width:100%;max-height:calc(100vh - 180px);width:auto;height:auto;touch-action:none;filter:drop-shadow(0 16px 28px rgba(0,0,0,.16))}
 #stage.draw{cursor:crosshair}
 @media (max-width:920px){#stage{max-height:50vh}.stagewrap{padding:12px;min-height:0}}
 .tabs{display:flex;gap:3px;background:var(--chip);padding:4px;border-radius:14px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
@@ -212,8 +206,6 @@ input[type=range]{width:100%;accent-color:var(--ink)}
   <div class="brand">chaechae<img class="spark" data-deco="chromeSparkle" alt=""><small>photobooth online<br>ถ่ายเลย ไม่ต้องลงแอป</small></div>
   <div class="steps"><b id="st1" class="on">1 ถ่ายรูป</b><span class="sep"></span><b id="st2">2 แต่งรูป</b></div>
 </header>
-<div class="marquee" aria-hidden="true"><div class="track" id="mq"></div></div>
-
 <main>
   <!-- ===== BOOTH ===== -->
   <section id="booth" class="grid">
@@ -1429,10 +1421,7 @@ async function share(){ const b=await exportBlob(), f=new File([b], fileName(), 
 
 /* ================= INIT ================= */
 buildBoothUI(); buildEditorUI(); renderSummary();
-document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));
-{ const words=['slay','core memory','ตัวแม่','main character','ใจฟู','it’s giving','ปังไม่ไหว','no cap','เพื่อนซี้','iykyk','จึ้งมาก','vibe check','หมดใจยังไงก็ตี๋','ชีเสิร์ฟ','ทำถึง','delulu'];
-  const html=words.map(w=>`<span>${w}</span>`).join(''); $('#mq').innerHTML=html+html; }
-$('#shoot').onclick=shoot;
+document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));$('#shoot').onclick=shoot;
 $('#camShoot').onclick=e=>{ e.stopPropagation(); shoot(); };
 $('#camFlip').onclick=e=>{ e.stopPropagation(); flipCam(); };
 $('#cam').addEventListener('click', e=>{ if(e.target.closest('button') || !$('#camMsg').hidden || state.busy) return; shoot(); });
