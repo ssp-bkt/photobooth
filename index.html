@@ -205,6 +205,7 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 @keyframes livepulse{50%{box-shadow:0 0 0 6px rgba(60,191,143,0)}}
 @media (prefers-reduced-motion:reduce){.visits i{animation:none}}
 .visits:not([hidden])+.steps{margin-left:16px}
+@media (max-width:600px){.visits:not([hidden])+.steps{display:none}}
 /* event mode */
 .eventbar{position:relative;z-index:1;max-width:1240px;margin:0 auto 12px;padding:0 20px;font-size:14px;color:var(--ink2)}
 .eventbar>div{display:inline-flex;gap:6px;align-items:center;background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:7px 14px}
