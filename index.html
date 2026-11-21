@@ -126,17 +126,31 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
   background-color:var(--chip);background-image:radial-gradient(var(--line) 1px,transparent 1.2px);background-size:18px 18px}
 #stage{max-width:100%;max-height:calc(100vh - 170px);width:auto;height:auto;touch-action:none;filter:drop-shadow(0 16px 28px rgba(0,0,0,.16))}
 #stage.draw{cursor:crosshair}
-@media (max-width:920px){#stage{max-height:64vh}.stagewrap{padding:16px}}
+@media (max-width:920px){#stage{max-height:50vh}.stagewrap{padding:12px;min-height:0}}
 .tabs{display:flex;gap:3px;background:var(--chip);padding:4px;border-radius:14px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar,.hscroll::-webkit-scrollbar{display:none}
 .tabs button{flex:1 0 auto;border:0;background:transparent;border-radius:10px;padding:8px 9px;font-size:13px;color:var(--muted);white-space:nowrap}
 .tabs button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .hscroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-bottom:12px}
-.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:360px;overflow:auto;padding:2px}
+/* side panel: tabs on top, content scrolls inside, main button pinned at the bottom — no page scrolling on desktop */
+.side{display:flex;flex-direction:column;position:sticky;top:16px;max-height:calc(100vh - 32px);padding-bottom:16px}
+.side .tabs{flex:none}
+.side .panels{flex:1 1 auto;min-height:0;overflow-y:auto;margin:0 -6px;padding:2px 6px 8px;overscroll-behavior:contain}
+.sidefoot{flex:none;padding-top:14px;border-top:1px solid var(--line)}
+.summary{font-size:12.5px;color:var(--muted);margin:0 2px 10px;line-height:1.5}
+.side .actions{flex:none;margin-top:0;padding-top:14px}
+@media (max-width:920px){
+  .side{position:static;max-height:none}
+  .side .panels{overflow:visible;margin:0;padding:0}
+  .tgrid{max-height:340px;overflow:auto}
+  .stickers{max-height:250px;overflow:auto}
+  .cam{max-height:56vh;aspect-ratio:auto;height:min(56vh,calc((100vw - 28px)*.75))}
+}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:2px}
 .tile{border:1.5px solid transparent;background:var(--chip);border-radius:14px;padding:10px 6px 7px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:7px;font-size:12px;color:var(--ink2);min-height:120px}
 .tile canvas{max-width:100%;max-height:118px;display:block}
 .tile.on{border-color:var(--ink);background:var(--surface)}
-.stickers{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:300px;overflow:auto;padding:2px}
+.stickers{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:2px}
 .stickers button{border:0;background:var(--chip);border-radius:12px;aspect-ratio:1;font-size:26px;display:flex;align-items:center;justify-content:center;padding:0;font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;transition:transform .1s}
 .stickers button:active{transform:scale(.92)}
 .stickers button img{width:72%;height:72%}
@@ -193,18 +207,31 @@ input[type=range]{width:100%;accent-color:var(--ink)}
       <div class="lpwrap"><div class="lp" id="lp"></div><div class="lptext" id="lpText"></div></div>
     </div>
 
-    <div class="card">
-      <div class="sec"><div class="label">เลือกช่อง</div><div class="layouts" id="layoutCards"></div></div>
-      <div class="sec"><div class="label">ฟิลเตอร์</div><div class="chips" id="filterChips"></div></div>
-      <div class="sec">
-        <div class="label">พร็อพติดหน้า <span>เลือกได้หลายอัน</span></div>
-        <div class="chips" id="propChips"></div>
-        <div class="fxstatus" id="fxStatus"></div>
+    <div class="card side">
+      <div class="tabs" id="btabs">
+        <button data-tab="layout" class="on">ช่อง</button>
+        <button data-tab="filter">ฟิลเตอร์</button>
+        <button data-tab="props">พร็อพ</button>
+        <button data-tab="settings">ตั้งค่า</button>
       </div>
-      <div class="sec"><div class="label">นับถอยหลัง</div><div class="seg" id="timerSeg"></div></div>
-      <div class="sec"><label class="switch">กลับด้านแบบกระจก<input type="checkbox" id="mirror" checked></label></div>
-      <button class="primary" id="shoot"><span class="dot"></span><span id="shootText">เริ่มถ่าย</span></button>
-      <button class="ghost" id="uploadBtn">ไม่มีกล้อง? อัปโหลดรูปแทน</button>
+      <div class="panels">
+        <div class="bpanel" data-panel="layout"><div class="label">เลือกช่อง</div><div class="layouts" id="layoutCards"></div></div>
+        <div class="bpanel" data-panel="filter" hidden><div class="label">ฟิลเตอร์ <span>ปรับเพิ่มได้ตอนแต่ง</span></div><div class="chips" id="filterChips"></div></div>
+        <div class="bpanel" data-panel="props" hidden>
+          <div class="label">พร็อพติดหน้า <span>เลือกได้หลายอัน</span></div>
+          <div class="chips" id="propChips"></div>
+          <div class="fxstatus" id="fxStatus"></div>
+        </div>
+        <div class="bpanel" data-panel="settings" hidden>
+          <div class="sec"><div class="label">นับถอยหลัง</div><div class="seg" id="timerSeg"></div></div>
+          <div class="sec"><label class="switch">กลับด้านแบบกระจก<input type="checkbox" id="mirror" checked></label></div>
+          <button class="ghost" id="uploadBtn" style="margin-top:0">ไม่มีกล้อง? อัปโหลดรูปจากเครื่องแทน</button>
+        </div>
+      </div>
+      <div class="sidefoot">
+        <div class="summary" id="summary"></div>
+        <button class="primary" id="shoot"><span class="dot"></span><span id="shootText">เริ่มถ่าย</span></button>
+      </div>
       <input type="file" id="file" accept="image/*" multiple hidden>
     </div>
   </section>
@@ -213,7 +240,7 @@ input[type=range]{width:100%;accent-color:var(--ink)}
   <section id="editor" class="grid" hidden>
     <div class="stagewrap"><canvas id="stage"></canvas></div>
 
-    <div class="card">
+    <div class="card side">
       <div class="tabs" id="tabs">
         <button data-tab="color" class="on">สีรูป</button>
         <button data-tab="crop">จัดรูป</button>
@@ -224,6 +251,7 @@ input[type=range]{width:100%;accent-color:var(--ink)}
         <button data-tab="draw">วาด</button>
       </div>
 
+      <div class="panels">
       <div class="panel" data-panel="color">
         <div class="sec"><div class="label">ฟิลเตอร์</div><div class="chips" id="edFilters"></div></div>
         <div class="sec" id="sliders"></div>
@@ -281,6 +309,7 @@ input[type=range]{width:100%;accent-color:var(--ink)}
           <button class="btn" id="eraser" style="flex:1">ยางลบ</button>
           <button class="btn" id="clearDraw" style="flex:1">ลบเส้นทั้งหมด</button>
         </div>
+      </div>
       </div>
 
       <div class="actions">
@@ -421,9 +450,17 @@ function buildBoothUI(){
   }
   const pc=$('#propChips'); pc.innerHTML='';
   for(const [k,P] of Object.entries(PROPS)){ const b=chip(P.name, false, ()=>toggleProp(k,b), `<span class="em">${P.icon}</span>`); pc.appendChild(b); }
-  seg($('#timerSeg'), TIMERS.map(t=>[t,`${t} วิ`]), state.timer, k=>state.timer=+k);
+  seg($('#timerSeg'), TIMERS.map(t=>[t,`${t} วิ`]), state.timer, k=>{ state.timer=+k; renderSummary(); });
   $('#mirror').onchange=e=>{ state.mirror=e.target.checked; video.classList.toggle('mirror',state.mirror); $('#fx').classList.toggle('mirror',state.mirror); };
+  $('#btabs').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; setOn($('#btabs'),b);
+    document.querySelectorAll('.bpanel').forEach(p=>p.hidden=p.dataset.panel!==b.dataset.tab); };
+  // any choice in the booth panel refreshes the one-line summary above the shoot button
+  $('#booth .panels').addEventListener('click', ()=>setTimeout(renderSummary,0));
   renderLive();
+}
+function renderSummary(){
+  const L=LAYOUTS[state.layout], p=activeProps.size;
+  $('#summary').textContent=`${L.name} · ฟิลเตอร์ ${FILTERS[state.filter][0]} · นับ ${state.timer} วิ${p?` · พร็อพ ${p} อย่าง`:''}`;
 }
 
 function renderLive(){
@@ -1148,7 +1185,7 @@ async function share(){ const b=await exportBlob(), f=new File([b], fileName(), 
   else { toast('เบราว์เซอร์นี้แชร์ตรงไม่ได้ — ดาวน์โหลดให้แทนนะ'); download(); } }
 
 /* ================= INIT ================= */
-buildBoothUI(); buildEditorUI();
+buildBoothUI(); buildEditorUI(); renderSummary();
 $('#shoot').onclick=shoot;
 $('#camShoot').onclick=e=>{ e.stopPropagation(); shoot(); };
 $('#camFlip').onclick=e=>{ e.stopPropagation(); flipCam(); };
