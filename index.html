@@ -409,10 +409,13 @@ const TEXT_STYLES = [['plain','ธรรมดา'],['shadow','เงา'],['out
 const STICKER_CATS = [['คำฮิต','words'],['มีม','meme'],['Y2K','y2k'],['โคเก็ตต์','coquette'],['เรโทร','retro'],['น่ารัก','cute'],['ดูเดิล','doodle']];
 // short trending slang (single words/phrases — not lyrics or quotes, so no copyright issue)
 const WORDS = [
-  ['หมดใจ','thhand'],['ยังไงก็ตี','thhand'],['บอยดอนคราย','thscript'],['ขี้แง','thhand'],['ตัวแม่','thscript'],['ตัวมัม','thhand'],
-  ['จึ้งมาก','thhand'],['ต๊าชชช','thhand'],['ปังไม่ไหว','thscript'],['เริ่ดดด','thscript'],['ฉ่ำ','thhand'],['เกินต้าน','thscript'],
-  ['ใจฟู','thscript'],['ใจบาง','thhand'],['ทัชใจ','thscript'],['อิหยังวะ','thhand'],['มูเตลู','thscript'],['ช่างมัน','thhand'],
-  ['โสดสนิท','thhand'],['เพื่อนซี้','thscript'],['เพื่อนตาย','thhand'],['งานดี','thhand'],['คิดถึงจัง','thscript'],['สตรองมาก','thhand'],
+  ['หมดใจยังไงก็ตี๋','thhand'],['ชีเสิร์ฟ','thscript'],['ทำถึง','thhand'],['ทำถึงมาก','thscript'],['ตัวตึง','thhand'],['ตัวแม่','thscript'],
+  ['ตัวมัม','thhand'],['ติดแกลม','thscript'],['ฉ่ำวาว','thscript'],['ฟาดมาก','thhand'],['เริ่ดดด','thscript'],['ต๊าชชช','thhand'],
+  ['จึ้งมาก','thhand'],['ปังปุริเย่','thscript'],['ปังไม่ไหว','thscript'],['เกินต้าน','thscript'],['มันจะไอนั่น','thhand'],['ฮ้อบ','thhand'],
+  ['อ่อม','thhand'],['2/10','retro'],['10/10','retro'],['5656566565','hand'],['คือดี','thscript'],['ขิงมาก','thhand'],
+  ['เฟียส','thscript'],['บอยดอนคราย','thscript'],['ขี้แง','thhand'],['นอยด์','thhand'],['อิหยังวะ','thhand'],['ใจฟู','thscript'],
+  ['ใจบาง','thhand'],['ทัชใจ','thscript'],['มูเตลู','thscript'],['ช่างมัน','thhand'],['โสดสนิท','thhand'],['เพื่อนซี้','thscript'],
+  ['เพื่อนตาย','thhand'],['งานดี','thhand'],['คิดถึงจัง','thscript'],['สตรองมาก','thhand'],
   ['slay','retro'],["it's giving",'script'],['main character','script'],['core memory','hand'],['no cap','retro'],['delulu','retro'],
   ['ate.','script'],['iykyk','hand'],['vibe check','retro'],['periodt','script'],['bestie','retro'],['obsessed','script'],
   ['no thoughts just vibes','hand'],['boy don\'t cry','script'],['xoxo','hand'],['cutie','script'],
@@ -1427,7 +1430,7 @@ async function share(){ const b=await exportBlob(), f=new File([b], fileName(), 
 /* ================= INIT ================= */
 buildBoothUI(); buildEditorUI(); renderSummary();
 document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));
-{ const words=['slay','core memory','ตัวแม่','main character','ใจฟู','it’s giving','ปังไม่ไหว','no cap','เพื่อนซี้','iykyk','จึ้งมาก','vibe check','หมดใจ','delulu'];
+{ const words=['slay','core memory','ตัวแม่','main character','ใจฟู','it’s giving','ปังไม่ไหว','no cap','เพื่อนซี้','iykyk','จึ้งมาก','vibe check','หมดใจยังไงก็ตี๋','ชีเสิร์ฟ','ทำถึง','delulu'];
   const html=words.map(w=>`<span>${w}</span>`).join(''); $('#mq').innerHTML=html+html; }
 $('#shoot').onclick=shoot;
 $('#camShoot').onclick=e=>{ e.stopPropagation(); shoot(); };
