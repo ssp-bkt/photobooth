@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f5f4f0">
 <title>ถ่ายโฟโต้บูธออนไลน์ ฟรี | chaechae ตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ</title>
-<meta name="description" content="ถ่ายโฟโต้บูธออนไลน์ฟรี ไม่ต้องลงแอป ถ่ายรูปแบบตู้สติ๊กเกอร์เกาหลี 4 ช่อง ผ่านมือถือ iPad หรือคอม มีกรอบน่ารัก พร็อพติดหน้า สติ๊กเกอร์ ปรับสี แล้วเซฟรูปได้ทันที">
+<meta name="description" content="ถ่ายโฟโต้บูธออนไลน์ฟรี ไม่ต้องลงแอป ถ่ายรูปแบบตู้สติ๊กเกอร์เกาหลี 4 ช่อง ผ่านมือถือ iPad หรือคอม มีกรอบน่ารัก สติ๊กเกอร์ ข้อความตัวเขียน ปรับสี แล้วเซฟรูปได้ทันที">
 <meta name="keywords" content="โฟโต้บูธออนไลน์, ถ่ายโฟโต้บูธออนไลน์, ตู้สติ๊กเกอร์ออนไลน์, photobooth online, ถ่ายรูป 4 ช่อง, กรอบรูปน่ารัก">
 <link rel="canonical" href="https://ssp-bkt.github.io/photobooth/">
 <meta property="og:type" content="website">
@@ -87,7 +87,6 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .cam{position:relative;aspect-ratio:4/3;max-height:calc(100vh - 290px);min-height:260px;border-radius:18px;overflow:hidden;background:#0b0b0c;isolation:isolate}
 .cam video{width:100%;height:100%;object-fit:cover;display:block}
 .mirror{transform:scaleX(-1)}
-#fx{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .msg{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;text-align:center;padding:24px;background:#141416;font-size:15px;line-height:1.5}
 .msg .ic{width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:24px}
 .count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:min(26vw,200px);font-weight:300;color:#fff;text-shadow:0 6px 30px rgba(0,0,0,.4)}
@@ -125,8 +124,6 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:13.5px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .chip.on{background:var(--on);color:var(--on-ink);border-color:var(--on)}
-.picon{width:26px;height:26px;margin:-5px -2px -5px -6px}
-.chip.on .picon{filter:drop-shadow(0 0 1px rgba(255,255,255,.6))}
 .fdot{width:15px;height:15px;border-radius:50%;background:linear-gradient(135deg,#ffb4c6,#ffd7a8 45%,#a9c9ff)}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--chip);border-radius:12px;padding:3px;gap:3px}
 .seg button{border:0;background:transparent;border-radius:9px;padding:8px 4px;font-size:13.5px;color:var(--muted)}
@@ -246,7 +243,6 @@ dialog#maker::backdrop{background:rgba(20,16,24,.45);-webkit-backdrop-filter:blu
       <img class="deco d3" data-deco="pixelHeart" alt=""><img class="deco d4" data-deco="cherries" alt="">
       <div class="cam" id="cam">
         <video id="video" class="mirror" playsinline muted></video>
-        <canvas id="fx" class="mirror"></canvas>
         <div class="msg" id="camMsg">
           <div class="ic">📷</div>
           <div id="camMsgText">กำลังเปิดกล้อง… กด “อนุญาต” ให้เว็บใช้กล้อง</div>
@@ -263,25 +259,12 @@ dialog#maker::backdrop{background:rgba(20,16,24,.45);-webkit-backdrop-filter:blu
     </div>
 
     <div class="card side">
-      <div class="tabs" id="btabs">
-        <button data-tab="layout" class="on">ช่อง</button>
-        <button data-tab="filter">ฟิลเตอร์</button>
-        <button data-tab="props">พร็อพ</button>
-        <button data-tab="settings">ตั้งค่า</button>
-      </div>
       <div class="panels">
-        <div class="bpanel" data-panel="layout"><div class="label">เลือกช่อง</div><div class="layouts" id="layoutCards"></div></div>
-        <div class="bpanel" data-panel="filter" hidden><div class="label">ฟิลเตอร์ <span>ปรับเพิ่มได้ตอนแต่ง</span></div><div class="chips" id="filterChips"></div></div>
-        <div class="bpanel" data-panel="props" hidden>
-          <div class="label">พร็อพติดหน้า <span>เลือกได้หลายอัน</span></div>
-          <div class="chips" id="propChips"></div>
-          <div class="fxstatus" id="fxStatus"></div>
-        </div>
-        <div class="bpanel" data-panel="settings" hidden>
-          <div class="sec"><div class="label">นับถอยหลัง</div><div class="seg" id="timerSeg"></div></div>
-          <div class="sec"><label class="switch">กลับด้านแบบกระจก<input type="checkbox" id="mirror" checked></label></div>
-          <button class="ghost" id="uploadBtn" style="margin-top:0">ไม่มีกล้อง? อัปโหลดรูปจากเครื่องแทน</button>
-        </div>
+        <div class="sec"><div class="label">เลือกช่อง</div><div class="layouts" id="layoutCards"></div></div>
+        <div class="sec"><div class="label">นับถอยหลัง</div><div class="seg" id="timerSeg"></div></div>
+        <div class="sec"><label class="switch">กลับด้านแบบกระจก<input type="checkbox" id="mirror" checked></label></div>
+        <button class="ghost" id="uploadBtn" style="margin-top:0">ไม่มีกล้อง? อัปโหลดรูปจากเครื่องแทน</button>
+        <div class="hint">ถ่ายรูปก่อน แล้วค่อยแต่ง ใส่ฟิลเตอร์ กรอบ และสติ๊กเกอร์ในหน้าถัดไป</div>
       </div>
       <div class="sidefoot">
         <div class="summary" id="summary"></div>
@@ -379,7 +362,7 @@ dialog#maker::backdrop{background:rgba(20,16,24,.45);-webkit-backdrop-filter:blu
 
   <footer class="about" id="about">
     <h1>ถ่ายโฟโต้บูธออนไลน์ ฟรี ไม่ต้องลงแอป</h1>
-    <p>chaechae (แชะแชะ) คือตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ ถ่ายรูปแบบโฟโต้บูธเกาหลี 4 ช่อง แถบ 2–3 ช่อง หรือตาราง 2×2 ได้ทันทีผ่านมือถือ iPad หรือคอมพิวเตอร์ เลือกกรอบน่ารัก ใส่พร็อพติดหน้า สติ๊กเกอร์ ข้อความตัวเขียน ปรับสีรูป แล้วดาวน์โหลดหรือแชร์ได้เลย</p>
+    <p>chaechae (แชะแชะ) คือตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ ถ่ายรูปแบบโฟโต้บูธเกาหลี 4 ช่อง แถบ 2–3 ช่อง หรือตาราง 2×2 ได้ทันทีผ่านมือถือ iPad หรือคอมพิวเตอร์ เลือกกรอบน่ารัก ใส่สติ๊กเกอร์ ข้อความตัวเขียน ปรับสีรูป แล้วดาวน์โหลดหรือแชร์ได้เลย</p>
     <p>รูปทั้งหมดประมวลผลในเครื่องของคุณ ไม่มีการอัปโหลดรูปขึ้นเซิร์ฟเวอร์</p>
     <button class="btn" id="openMaker" style="margin-top:10px">✦ สำหรับร้านค้า / อีเวนต์ — สร้างลิงก์และ QR เฉพาะงาน</button>
   </footer>
@@ -535,24 +518,15 @@ function buildBoothUI(){
     b.onclick=()=>{ if(state.busy) return; state.layout=k; setOn(lc,b); state.shots=[]; state.crops=[]; renderLive(); };
     lc.appendChild(b);
   }
-  const fc=$('#filterChips'); fc.innerHTML='';
-  for(const [k,[name,css]] of Object.entries(FILTERS)){
-    const b=chip(name, k===state.filter, ()=>{ state.filter=k; setOn(fc,b); video.style.filter=css; renderLive(); }, `<span class="fdot" style="filter:${css}"></span>`);
-    fc.appendChild(b);
-  }
-  const pc=$('#propChips'); pc.innerHTML='';
-  for(const [k,name] of Object.entries(PROPS)){ const b=chip(name, false, ()=>toggleProp(k,b), `<img class="picon" src="${propIcon(k)}" alt="">`); pc.appendChild(b); }
   seg($('#timerSeg'), TIMERS.map(t=>[t,`${t} วิ`]), state.timer, k=>{ state.timer=+k; renderSummary(); });
-  $('#mirror').onchange=e=>{ state.mirror=e.target.checked; video.classList.toggle('mirror',state.mirror); $('#fx').classList.toggle('mirror',state.mirror); };
-  $('#btabs').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; setOn($('#btabs'),b);
-    document.querySelectorAll('.bpanel').forEach(p=>p.hidden=p.dataset.panel!==b.dataset.tab); };
+  $('#mirror').onchange=e=>{ state.mirror=e.target.checked; video.classList.toggle('mirror',state.mirror); };
   // any choice in the booth panel refreshes the one-line summary above the shoot button
   $('#booth .panels').addEventListener('click', ()=>setTimeout(renderSummary,0));
   renderLive();
 }
 function renderSummary(){
-  const L=LAYOUTS[state.layout], p=activeProps.size;
-  $('#summary').textContent=`${L.name} · ฟิลเตอร์ ${FILTERS[state.filter][0]} · นับ ${state.timer} วิ${p?` · พร็อพ ${p} อย่าง`:''}`;
+  const L=LAYOUTS[state.layout];
+  $('#summary').textContent=`${L.name} · นับถอยหลัง ${state.timer} วิ · ถ่ายเสร็จแล้วค่อยแต่ง`;
 }
 
 function renderLive(){
@@ -577,13 +551,12 @@ async function startCam(){
     video.srcObject=stream; await video.play();
     $('#camMsg').hidden=true;
     navigator.mediaDevices.enumerateDevices().then(ds=>{ $('#camFlip').hidden = ds.filter(d=>d.kind==='videoinput').length<2; }).catch(()=>{});
-    if(activeProps.size && landmarker && !fxRAF){ prevFaces=[]; fxLoop(); }
   }catch(e){
     camFail(e.name==='NotAllowedError' ? 'ยังไม่ได้อนุญาตให้ใช้กล้อง — อนุญาตที่แถบที่อยู่เว็บ แล้วกดเปิดใหม่' : 'หากล้องไม่เจอ ลองเสียบกล้องหรืออัปโหลดรูปแทนนะ');
   }
 }
 function camFail(msg){ stream=null; $('#camMsg').hidden=false; $('#camMsgText').textContent=msg; }
-function stopCam(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } video.srcObject=null; cancelAnimationFrame(fxRAF); fxRAF=0; }
+function stopCam(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } video.srcObject=null; }
 
 // keep the whole raw frame (any aspect ratio); cropping + colour are applied later in the editor
 function grab(src, sw, sh, mirror, overlay){
@@ -614,7 +587,7 @@ async function shoot(){
     for(let t=T;t>0;t--){ cnt.textContent=t; cnt.classList.remove('pop'); void cnt.offsetWidth; cnt.classList.add('pop'); beep(t===1); if(!await wait(1000)) break outer; }
     cnt.textContent='';
     const fl=$('#flash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); shutterSound();
-    state.shots.push(grab(video, video.videoWidth, video.videoHeight, state.mirror, activeProps.size ? $('#fx') : null));
+    state.shots.push(grab(video, video.videoWidth, video.videoHeight, state.mirror));
     renderLive();
     if(i<n-1 && !await wait(800)) break;
   }
@@ -626,8 +599,8 @@ function flipCam(){
   if(state.busy) return;
   state.facing = state.facing==='user' ? 'environment' : 'user';
   state.mirror = state.facing==='user'; $('#mirror').checked=state.mirror;
-  video.classList.toggle('mirror',state.mirror); $('#fx').classList.toggle('mirror',state.mirror);
-  prevFaces=[]; startCam();
+  video.classList.toggle('mirror',state.mirror);
+  startCam();
 }
 async function handleUpload(files){
   const n=shotCount(); state.shots=[]; state.crops=[];
@@ -642,145 +615,8 @@ async function handleUpload(files){
   toast(state.shots.length<n ? `แบบนี้ใช้ ${n} รูป — ช่องที่เหลือว่างไว้ • ลากรูปเพื่อจัดตำแหน่งได้` : 'ลากรูปเพื่อจัดตำแหน่งให้พอดีได้เลย');
 }
 
-/* ================= FACE PROPS (MediaPipe, Apache-2.0) ================= */
-const PROPS = {
-  bunny:'หูกระต่าย', cat:'หูแมว', bear:'หูหมี', crown:'มงกุฎ', bows:'โบว์คู่', party:'หมวกปาร์ตี้', glasses:'แว่นกลม',
-  hearts:'หัวใจลอย', blush:'แก้มแดง', whiskers:'หนวดแมว', pig:'จมูกหมู', stache:'หนวดเท่', stars:'ดาววิบวับ',
-};
-// back-to-front drawing order
-const PROP_ORDER = ['blush','whiskers','pig','stache','glasses','bunny','cat','bear','party','crown','bows','hearts','stars'];
-const MP_BASE='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
-const MP_MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
-const activeProps=new Set();
-let landmarker=null, lmLoading=null, fxRAF=0, faces=[], prevFaces=[], lastVT=-1, lastCount=-1;
-function fxStatus(t){ $('#fxStatus').textContent=t; }
-async function ensureLandmarker(){
-  if(landmarker) return landmarker;
-  if(lmLoading) return lmLoading;
-  fxStatus('กำลังโหลดตัวจับหน้า (ครั้งแรกอาจใช้เวลาสักครู่)…');
-  lmLoading=(async()=>{
-    const {FaceLandmarker, FilesetResolver}=await import(`${MP_BASE}/vision_bundle.mjs`);
-    const files=await FilesetResolver.forVisionTasks(`${MP_BASE}/wasm`);
-    const make=delegate=>FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:MP_MODEL,delegate},runningMode:'VIDEO',numFaces:4});
-    try{ landmarker=await make('GPU'); }catch(e){ landmarker=await make('CPU'); }
-    return landmarker;
-  })();
-  try{ await lmLoading; fxStatus('พร้อมแล้ว — หันหน้าเข้ากล้องได้เลย'); lastCount=-1; }
-  catch(e){ console.error(e); lmLoading=null; fxStatus('โหลดตัวจับหน้าไม่สำเร็จ — เช็กอินเทอร์เน็ตแล้วลองใหม่'); throw e; }
-  return landmarker;
-}
-async function toggleProp(k,btn){
-  if(activeProps.has(k)) activeProps.delete(k); else activeProps.add(k);
-  btn.classList.toggle('on', activeProps.has(k));
-  if(activeProps.size){ try{ await ensureLandmarker(); }catch(e){ return; } if(!fxRAF) fxLoop(); }
-  else stopFx();
-}
-function stopFx(){ cancelAnimationFrame(fxRAF); fxRAF=0; faces=[]; prevFaces=[]; const fx=$('#fx'); fx.getContext('2d').clearRect(0,0,fx.width,fx.height); if(!activeProps.size) fxStatus(''); }
-function smoothFaces(list){
-  const out=list.map((lm,i)=>{ const p=prevFaces[i];
-    if(!p || p.length!==lm.length) return lm.map(q=>({x:q.x,y:q.y}));
-    const jump=Math.hypot(lm[1].x-p[1].x, lm[1].y-p[1].y), a=jump>.03?.85:.5;
-    return lm.map((q,j)=>({x:p[j].x+(q.x-p[j].x)*a, y:p[j].y+(q.y-p[j].y)*a})); });
-  prevFaces=out; return out;
-}
-function fxLoop(){
-  fxRAF=requestAnimationFrame(fxLoop);
-  const fx=$('#fx'); if(!stream || !video.videoWidth || !landmarker) return;
-  if(fx.width!==video.videoWidth || fx.height!==video.videoHeight){ fx.width=video.videoWidth; fx.height=video.videoHeight; }
-  if(video.currentTime!==lastVT){
-    lastVT=video.currentTime;
-    try{ faces=smoothFaces(landmarker.detectForVideo(video, performance.now()).faceLandmarks||[]); }catch(e){}
-    if(faces.length!==lastCount){ lastCount=faces.length; fxStatus(faces.length ? `เจอ ${faces.length} หน้า` : 'ยังไม่เจอหน้า — ขยับเข้ามาใกล้กล้องหน่อย'); }
-  }
-  const c=fx.getContext('2d'); c.clearRect(0,0,fx.width,fx.height);
-  drawProps(c, faces, fx.width, fx.height, performance.now()/1000);
-}
-function faceGeo(lm,w,h){
-  const P=i=>({x:lm[i].x*w, y:lm[i].y*h}), le=P(33), re=P(263), a=Math.atan2(re.y-le.y, re.x-le.x);
-  return { a, fw:dist(P(234),P(454)), up:{x:Math.sin(a),y:-Math.cos(a)}, side:{x:Math.cos(a),y:Math.sin(a)},
-    top:P(10), mid:P(168), nose:P(4), lip:P(164), eyes:[lm[468]?P(468):le, lm[473]?P(473):re], cheeks:[P(205),P(425)] };
-}
+/* shared shape helper (doodles) */
 function heartPath(c,cx,cy,r){ c.beginPath(); c.moveTo(cx,cy+r*.9); c.bezierCurveTo(cx-r*1.6,cy-r*.2,cx-r*.6,cy-r*1.4,cx,cy-r*.45); c.bezierCurveTo(cx+r*.6,cy-r*1.4,cx+r*1.6,cy-r*.2,cx,cy+r*.9); c.closePath(); }
-/* Props are hand-drawn line art (no emoji) in a face-local space: origin between the eyes,
-   1 unit = face width, rotated with the head. Left/right parts are mirrored from averaged
-   landmarks so every prop stays balanced, and everything scales with the face. */
-const LINE='#3b2b30';
-function ink(c, path, fillCol, lw=1){ // white sticker edge + dark doodle line
-  path(); c.save(); c.lineJoin=c.lineCap='round';
-  c.strokeStyle='#ffffff'; c.lineWidth=.07*lw; c.stroke();
-  if(fillCol){ c.fillStyle=fillCol; c.fill(); }
-  c.strokeStyle=LINE; c.lineWidth=.026*lw; c.stroke(); c.restore();
-}
-function earPath(c,w,L){ c.beginPath(); c.moveTo(-w/2,0); c.bezierCurveTo(-w*.62,-L*.62,-w*.3,-L,0,-L); c.bezierCurveTo(w*.3,-L,w*.62,-L*.62,w/2,0); c.closePath(); }
-const PROP_DRAW = {
-  bunny:(c,A,t)=>{ for(const s of [-1,1]){ c.save(); c.translate(s*.17,A.head+.07); c.rotate(s*.16+Math.sin(t*2.4+s)*.035);
-    ink(c,()=>earPath(c,.2,.6),'#ffffff'); c.translate(0,-.06); c.fillStyle='#ffc7d6'; earPath(c,.09,.42); c.fill(); c.restore(); } },
-  cat:(c,A)=>{ for(const s of [-1,1]){ c.save(); c.translate(s*.29,A.head+.1); c.rotate(s*.28);
-    ink(c,()=>{ c.beginPath(); c.moveTo(-.15,0); c.lineTo(-.03,-.3); c.quadraticCurveTo(0,-.34,.03,-.3); c.lineTo(.15,0); c.closePath(); },'#ffffff');
-    c.fillStyle='#ffc7d6'; c.beginPath(); c.moveTo(-.07,-.05); c.lineTo(0,-.21); c.lineTo(.07,-.05); c.closePath(); c.fill(); c.restore(); } },
-  bear:(c,A)=>{ for(const s of [-1,1]){ ink(c,()=>{ c.beginPath(); c.arc(s*.33,A.head+.05,.13,0,Math.PI*2); },'#e8c39e'); c.fillStyle='#f6b8c3'; dot(c,s*.33,A.head+.05,.065); } },
-  crown:(c,A)=>{ c.save(); c.translate(0,A.head);
-    ink(c,()=>{ c.beginPath(); c.moveTo(-.26,0); c.lineTo(-.29,-.2); c.lineTo(-.13,-.08); c.lineTo(0,-.27); c.lineTo(.13,-.08); c.lineTo(.29,-.2); c.lineTo(.26,0); c.closePath(); },'#ffe58a');
-    for(const [x,y] of [[-.29,-.2],[0,-.27],[.29,-.2]]) ink(c,()=>{ c.beginPath(); c.arc(x,y,.03,0,Math.PI*2); },'#ff9fb8',.7);
-    ink(c,()=>heartPath(c,0,-.07,.045),'#ff9fb8',.7); c.restore(); },
-  bows:(c,A)=>{ for(const s of [-1,1]){ c.save(); c.translate(s*.38,A.head+.16); c.rotate(s*.25);
-    ink(c,()=>{ c.beginPath(); c.moveTo(-.02,.01); c.lineTo(-.08,.13); c.lineTo(-.02,.11); c.moveTo(.02,.01); c.lineTo(.08,.13); c.lineTo(.02,.11); },'#ffb3c8',.8);
-    ink(c,()=>{ c.beginPath(); for(const d of [-1,1]){ c.moveTo(0,0); c.bezierCurveTo(d*.05,-.1,d*.19,-.09,d*.18,0); c.bezierCurveTo(d*.19,.09,d*.05,.1,0,0); } },'#ffb3c8',.8);
-    ink(c,()=>{ c.beginPath(); c.arc(0,0,.035,0,Math.PI*2); },'#ff8fb0',.8); c.restore(); } },
-  party:(c,A)=>{ c.save(); c.translate(0,A.head+.05);
-    ink(c,()=>{ c.beginPath(); c.moveTo(-.15,0); c.lineTo(.02,-.42); c.lineTo(.15,0); c.quadraticCurveTo(0,.04,-.15,0); c.closePath(); },'#bfe3ff');
-    c.fillStyle='#ff9fb8'; for(const [x,y] of [[-.06,-.08],[.06,-.14],[-.01,-.24],[.04,-.04]]) dot(c,x,y,.018);
-    ink(c,()=>{ c.beginPath(); c.arc(.02,-.45,.05,0,Math.PI*2); },'#fff3a0',.8); c.restore(); },
-  glasses:(c,A)=>{ const ex=A.eye.x, ey=A.eye.y, r=.13;
-    ink(c,()=>{ c.beginPath(); c.arc(-ex,ey,r,0,Math.PI*2); c.moveTo(ex+r,ey); c.arc(ex,ey,r,0,Math.PI*2); },'rgba(255,255,255,.16)',.9);
-    ink(c,()=>{ c.beginPath(); c.moveTo(-ex+r*.92,ey-.03); c.quadraticCurveTo(0,ey-.08,ex-r*.92,ey-.03); },null,.9);
-    c.save(); c.strokeStyle='rgba(255,255,255,.85)'; c.lineWidth=.018; c.lineCap='round';
-    for(const s of [-1,1]){ c.beginPath(); c.arc(s*ex,ey,r*.68,Math.PI*1.1,Math.PI*1.4); c.stroke(); } c.restore(); },
-  hearts:(c,A,t)=>{ [[-.47,.12,.07],[.45,.02,.06],[.3,-.2,.045]].forEach(([x,y,r],i)=>{ const yy=A.head+y+Math.sin(t*3+i*1.7)*.02;
-    ink(c,()=>heartPath(c,x,yy,r),'#ff9fb8',.8); }); },
-  blush:(c,A)=>{ for(const s of [-1,1]){ const x=s*A.cheek.x, y=A.cheek.y; c.fillStyle='rgba(255,130,165,.55)'; dot(c,x,y,.085,.05);
-    c.save(); c.strokeStyle=LINE; c.lineWidth=.014; c.lineCap='round';
-    for(let k=-1;k<=1;k++){ c.beginPath(); c.moveTo(x+k*.034-.013,y+.022); c.lineTo(x+k*.034+.013,y-.022); c.stroke(); } c.restore(); } },
-  whiskers:(c,A)=>{ const nx=A.nose.x, y=A.nose.y+.03;
-    for(const s of [-1,1]) for(let k=-1;k<=1;k++) ink(c,()=>{ c.beginPath(); c.moveTo(nx+s*.17,y+k*.04); c.lineTo(nx+s*.4,y+k*.075); },null,.7);
-    ink(c,()=>{ c.beginPath(); c.moveTo(nx-.035,y-.04); c.lineTo(nx+.035,y-.04); c.lineTo(nx,y); c.closePath(); },'#ff9fb8',.7); },
-  pig:(c,A)=>{ const x=A.nose.x, y=A.nose.y+.02; ink(c,()=>{ c.beginPath(); c.ellipse(x,y,.1,.07,0,0,Math.PI*2); },'#ffc2cf');
-    c.fillStyle=LINE; dot(c,x-.035,y,.016,.026); dot(c,x+.035,y,.016,.026); },
-  stache:(c,A)=>{ c.save(); c.translate(A.lip.x,A.lip.y-.01); const W=.2;
-    ink(c,()=>{ c.beginPath(); c.moveTo(0,-W*.12);
-      for(const s of [1,-1]){ c.bezierCurveTo(s*W*.35,-W*.42,s*W*.8,-W*.3,s*W,-W*.05); c.bezierCurveTo(s*W*1.1,W*.1,s*W*.95,W*.05,s*W*.85,-W*.02); c.bezierCurveTo(s*W*.6,W*.22,s*W*.25,W*.2,0,W*.02); }
-      c.closePath(); },'#6b4a3a',.8); c.restore(); },
-  stars:(c,A,t)=>{ const cy=A.head-.02;
-    for(let k=0;k<5;k++){ const th=t*1.8+k*Math.PI*2/5, x=.58*Math.cos(th), y=cy+.12*Math.sin(th), r=.055+.022*Math.sin(th);
-      ink(c,()=>sparkleP(c,x,y,r),'#fff3a0',.7); } },
-};
-function propAnchors(lm,w,h){
-  const g=faceGeo(lm,w,h), cs=Math.cos(-g.a), sn=Math.sin(-g.a);
-  const L=p=>{ const dx=p.x-g.mid.x, dy=p.y-g.mid.y; return {x:(dx*cs-dy*sn)/g.fw, y:(dx*sn+dy*cs)/g.fw}; };
-  const top=L(g.top), e=g.eyes.map(L), ch=g.cheeks.map(L);
-  return { g, head:top.y-.12,
-    eye:{x:(Math.abs(e[0].x)+Math.abs(e[1].x))/2, y:(e[0].y+e[1].y)/2},
-    cheek:{x:(Math.abs(ch[0].x)+Math.abs(ch[1].x))/2, y:(ch[0].y+ch[1].y)/2},
-    nose:L(g.nose), lip:L(g.lip) };
-}
-function drawProps(c, list, w, h, t){
-  for(const lm of list){
-    const A=propAnchors(lm,w,h), g=A.g;
-    c.save(); c.translate(g.mid.x,g.mid.y); c.rotate(g.a); c.scale(g.fw,g.fw);
-    for(const k of PROP_ORDER) if(activeProps.has(k)) PROP_DRAW[k](c,A,t);
-    c.restore();
-  }
-}
-const propIconCache={};
-function propIcon(k){
-  if(propIconCache[k]) return propIconCache[k];
-  const cv=document.createElement('canvas'); cv.width=cv.height=72; const c=cv.getContext('2d');
-  const A={head:-.46, eye:{x:.18,y:0}, cheek:{x:.25,y:.2}, nose:{x:0,y:.18}, lip:{x:0,y:.3}};
-  c.translate(36,44); c.scale(30,30);
-  c.strokeStyle='rgba(120,110,100,.35)'; c.lineWidth=.035; c.beginPath(); c.ellipse(0,.03,.38,.47,0,0,Math.PI*2); c.stroke();
-  PROP_DRAW[k](c,A,.6);
-  return propIconCache[k]=cv.toDataURL();
-}
 
 /* ================= FRAMES (all drawn in code) ================= */
 function fill(c,W,H,col){ c.fillStyle=col; c.fillRect(0,0,W,H); }
@@ -1506,7 +1342,7 @@ function afterEventUI(){
   $('#title').value=ed.title;
   const bar=$('#eventBar'); bar.hidden=false; bar.innerHTML='<div>✦ กำลังถ่ายในงาน <b></b><span></span></div>';
   bar.querySelector('b').textContent=ed.title; bar.querySelector('span').textContent=ed.subtitle?' · '+ed.subtitle:'';
-  if(EVENT.lock){ $('#btabs [data-tab="layout"]').hidden=true; $('#btabs [data-tab="filter"]').click(); }
+  if(EVENT.lock){ $('#layoutCards').closest('.sec').hidden=true; }
   document.title=`${ed.title} — chaechae`;
 }
 

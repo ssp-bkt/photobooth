@@ -6,10 +6,8 @@ design, or artwork may be copied, modified, redistributed, or used for
 commercial purposes without prior written permission from the copyright holder.
 
 Third-party components keep their own licenses:
-- Anuphan, Caveat, Charm, Dancing Script, Pacifico, Sriracha fonts:
+- Anuphan, Caveat, Charm, Dancing Script, Pacifico, Sriracha, Instrument Serif fonts:
   SIL Open Font License 1.1 (loaded from Google Fonts)
-- MediaPipe Tasks Vision and Face Landmarker model: Apache License 2.0
-  (loaded from jsDelivr and Google Cloud Storage)
 
 ---
 
