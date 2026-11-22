@@ -499,7 +499,7 @@ const NOTES = [
 ];
 
 // every sticker is drawn in code (no emoji) — see ART_SETS / DOODLES below
-const STICKER_CATS = [['ตัดแปะ','scrap'],['เทปกาว','tape'],['โน้ต','notes'],['คำฮิต','words'],['มีม','meme'],['Y2K','y2k'],['โคเก็ตต์','coquette'],['เรโทร','retro'],['น่ารัก','cute'],['ดูเดิล','doodle']];
+const STICKER_CATS = [['ตัดแปะ','scrap'],['เทปกาว','tape'],['ดวงดาว','space'],['โน้ต','notes'],['คำฮิต','words'],['มีม','meme'],['Y2K','y2k'],['โคเก็ตต์','coquette'],['เรโทร','retro'],['น่ารัก','cute'],['ดูเดิล','doodle']];
 // short trending slang (single words/phrases — not lyrics or quotes, so no copyright issue)
 const WORDS = [
   ['หมดใจยังไงก็ตี๋','thhand'],['ชีเสิร์ฟ','thscript'],['ทำถึง','thhand'],['ทำถึงมาก','thscript'],['ตัวตึง','thhand'],['ตัวแม่','thscript'],
@@ -781,7 +781,69 @@ FRAMES.push(
   {id:'newspaper', name:'หนังสือพิมพ์', cat:'ตัดแปะ', ink:'#3b352c', bg:(c,W,H)=>{ fill(c,W,H,'#eee8dc'); const R=rng(17), col=Math.max(3,Math.round(W/260)), cw=(W-40)/col;
     for(let k=0;k<col;k++){ const x0=20+k*cw+10; for(let y=24;y<H-10;y+=18){ let x=x0; while(x<x0+cw-24){ const w=12+R()*48; c.fillStyle='rgba(70,62,50,.22)'; c.fillRect(x,y,Math.min(w,x0+cw-20-x),6); x+=w+8; } if(R()<.04){ c.fillStyle='rgba(50,44,36,.35)'; c.fillRect(x0,y+12,cw-30,14); y+=24; } } } }},
 );
-const FRAME_CATS = ['ทั้งหมด','ตัดแปะ','มินิมอล','น่ารัก','สีแสบ','ออร่า','เรโทร'];
+/* ---- space helpers ---- */
+function starField(c,W,H,seed,n,cols,maxR){ const R=rng(seed); c.save(); for(let i=0;i<n;i++){ const r=.5+Math.pow(R(),3)*maxR; c.globalAlpha=.35+R()*.65; c.fillStyle=cols[i%cols.length]; c.beginPath(); c.arc(R()*W,R()*H,r,0,7); c.fill(); } c.restore(); }
+function nebula(c,W,H,cols,seed){ const R=rng(seed); cols.forEach(col=>{ for(let k=0;k<2;k++){ const x=R()*W, y=R()*H, r=Math.max(W,H)*(.25+R()*.35), g=c.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,col); g.addColorStop(1,'rgba(0,0,0,0)'); c.fillStyle=g; c.fillRect(0,0,W,H); } }); }
+function star5(c,x,y,r,inner){ inner=inner||.45; c.beginPath(); for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*inner:r; c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr); } c.closePath(); }
+function crescentPath(c,x,y,R1,dx,dy,R2){ // outer circle minus an offset inner circle
+  const d=Math.hypot(dx,dy), a=(R1*R1-R2*R2+d*d)/(2*d), h=Math.sqrt(Math.max(0,R1*R1-a*a)), px=a*dx/d, py=a*dy/d;
+  const A={x:px-h*dy/d,y:py+h*dx/d}, B={x:px+h*dy/d,y:py-h*dx/d}, nrm=t=>((t%(2*Math.PI))+2*Math.PI)%(2*Math.PI), away=Math.atan2(-dy,-dx);
+  const arcThrough=(cx,cy,r,a0,a1)=>c.arc(x+cx,y+cy,r,a0,a1,!(nrm(away-a0)<=nrm(a1-a0)));
+  c.beginPath(); arcThrough(0,0,R1,Math.atan2(A.y,A.x),Math.atan2(B.y,B.x)); arcThrough(dx,dy,R2,Math.atan2(B.y-dy,B.x-dx),Math.atan2(A.y-dy,A.x-dx)); c.closePath(); }
+function glowFill(c,col,blur){ c.save(); c.shadowColor=col; c.shadowBlur=blur; c.fillStyle=col; c.fill(); c.restore(); }
+FRAMES.push(
+  {id:'galaxy', name:'กาแล็กซี่', cat:'ดวงดาว', ink:'#ffffff', bg:(c,W,H)=>{ const g=c.createLinearGradient(0,0,W,H); g.addColorStop(0,'#1b1846'); g.addColorStop(.55,'#3a1f5c'); g.addColorStop(1,'#14143a'); c.fillStyle=g; c.fillRect(0,0,W,H);
+    nebula(c,W,H,['rgba(255,120,200,.38)','rgba(110,170,255,.38)','rgba(175,125,255,.38)'],5); starField(c,W,H,3,W*H/2400,['#ffffff','#ffe9f5','#dfe9ff'],2.2); sparkles(c,W,H,'#ffffff',8,10,6,15,true); }},
+  {id:'pastelsky', name:'ฟ้าพาสเทล', cat:'ดวงดาว', ink:'#6a5a8a', bg:(c,W,H)=>{ const g=c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#cfe0ff'); g.addColorStop(.5,'#e6dbff'); g.addColorStop(1,'#ffdcec'); c.fillStyle=g; c.fillRect(0,0,W,H);
+    starField(c,W,H,12,W*H/3200,['#ffffff'],2); sparkles(c,W,H,'#ffffff',13,10,5,12,true); c.fillStyle='rgba(255,255,255,.85)'; const R=rng(5); for(let x=-30;x<W+60;x+=68) dot(c,x,H-10+R()*10,38+R()*26); },
+    fg:(c,W,H,t)=>{ crescentPath(c,W-56,(t||0)+50,24,10,-8,21); glowFill(c,'#fff7d1',14); }},
+  {id:'starrynight', name:'คืนดาวทอง', cat:'ดวงดาว', ink:'#f5d77a', bg:(c,W,H)=>{ const g=c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#101a38'); g.addColorStop(1,'#24315f'); c.fillStyle=g; c.fillRect(0,0,W,H);
+    starField(c,W,H,21,W*H/3000,['#ffffff','#fff3c4'],1.6); const R=rng(8); for(let i=0;i<W*H/16000;i++){ star5(c,R()*W,R()*H,4+R()*8); glowFill(c,'#f5d77a',8); } },
+    fg:(c,W,H)=>{ crescentPath(c,PAD+34,H-FOOT/2,22,9,-7,19); glowFill(c,'#f5d77a',12); }},
+  {id:'constellation', name:'กลุ่มดาว', cat:'ดวงดาว', ink:'#e8ecff', bg:(c,W,H)=>{ fill(c,W,H,'#0e1836'); nebula(c,W,H,['rgba(90,130,255,.25)','rgba(160,110,255,.22)'],9); starField(c,W,H,31,W*H/2600,['#ffffff'],1.4);
+    const R=rng(14); for(let k=0;k<Math.max(4,W*H/60000);k++){ let x=R()*W, y=R()*H; const pts=[[x,y]]; for(let j=0;j<3+Math.floor(R()*3);j++){ const a=R()*Math.PI*2, d=36+R()*60; x+=Math.cos(a)*d; y+=Math.sin(a)*d; pts.push([x,y]); }
+      c.save(); c.strokeStyle='rgba(255,255,255,.5)'; c.lineWidth=1.5; c.beginPath(); pts.forEach(([px,py],i)=>i?c.lineTo(px,py):c.moveTo(px,py)); c.stroke();
+      c.fillStyle='#fff'; c.shadowColor='#fff'; c.shadowBlur=8; pts.forEach(([px,py],i)=>dot(c,px,py,i%2?2.6:4)); c.restore(); } }},
+  {id:'cosmicpink', name:'จักรวาลชมพู', cat:'ดวงดาว', ink:'#ffffff', bg:(c,W,H)=>{ const g=c.createLinearGradient(0,0,W,H); g.addColorStop(0,'#a95bd6'); g.addColorStop(1,'#ff86c4'); c.fillStyle=g; c.fillRect(0,0,W,H);
+    nebula(c,W,H,['rgba(255,190,230,.45)','rgba(150,140,255,.45)'],2); starField(c,W,H,41,W*H/2800,['#ffffff'],1.8);
+    const R=rng(6), cols=['#ffd6f0','#c9b8ff','#9fe3ff','#ffe8a8']; for(let i=0;i<W*H/70000;i++){ const x=R()*W, y=R()*H, r=10+R()*14; c.fillStyle=cols[i%4]; dot(c,x,y,r); c.save(); c.strokeStyle='rgba(255,255,255,.85)'; c.lineWidth=2.5; c.beginPath(); c.ellipse(x,y,r*1.8,r*.5,-.4,.1,Math.PI-.1); c.stroke(); c.restore(); } }},
+  {id:'shooting', name:'ดาวตก', cat:'ดวงดาว', ink:'#ffffff', bg:(c,W,H)=>{ const g=c.createLinearGradient(0,0,W,H); g.addColorStop(0,'#8b7cf2'); g.addColorStop(1,'#f39fcf'); c.fillStyle=g; c.fillRect(0,0,W,H); starField(c,W,H,51,W*H/3000,['#ffffff'],1.8);
+    const R=rng(19); for(let i=0;i<Math.max(5,W*H/50000);i++){ const x=R()*W, y=R()*H, len=80+R()*110, a=-2.5; const tx=x+Math.cos(a)*len, ty=y-Math.sin(a)*-len;
+      const lg=c.createLinearGradient(x,y,tx,ty); lg.addColorStop(0,'rgba(255,255,255,.95)'); lg.addColorStop(1,'rgba(255,255,255,0)'); c.save(); c.strokeStyle=lg; c.lineWidth=3; c.lineCap='round'; c.beginPath(); c.moveTo(x,y); c.lineTo(tx,ty); c.stroke(); c.restore();
+      sparkleP(c,x,y,7); glowFill(c,'#ffffff',10); } }},
+  {id:'aurora', name:'แสงเหนือ', cat:'ดวงดาว', ink:'#e9fff7', bg:(c,W,H)=>{ const g=c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0a1430'); g.addColorStop(1,'#14204a'); c.fillStyle=g; c.fillRect(0,0,W,H);
+    const cols=['#4fffc4','#7ac8ff','#c49bff','#ff9fd6']; for(let k=0;k<4;k++){ const y0=H*(.12+k*.24); c.save(); c.globalAlpha=.3; c.strokeStyle=cols[k]; c.shadowColor=cols[k]; c.shadowBlur=40; c.lineWidth=46; c.lineCap='round';
+      c.beginPath(); c.moveTo(-40,y0); c.bezierCurveTo(W*.3,y0-90,W*.6,y0+90,W+40,y0-20); c.stroke(); c.restore(); }
+    starField(c,W,H,61,W*H/2600,['#ffffff'],1.5); }},
+  {id:'moonphase', name:'ข้างขึ้นข้างแรม', cat:'ดวงดาว', ink:'#f4ecd8', bg:(c,W,H)=>{ fill(c,W,H,'#16131f'); starField(c,W,H,71,W*H/2600,['#fff4dc','#ffffff'],1.5); },
+    fg:(c,W,H,t)=>{ const r=11, n=7, sp=34, y=(t||0)+20, x0=W/2-sp*(n-1)/2;
+      for(let k=0;k<n;k++){ const x=x0+k*sp; c.save(); c.beginPath(); c.arc(x,y,r,0,7); c.clip(); c.fillStyle='#f4ecd8'; c.fill();
+        if(k!==3){ const off=(k<3?1:-1)*2*r*(k<3?k:6-k)/3; c.fillStyle='#2a2638'; dot(c,x+off,y,r+.5); } c.restore();
+        c.strokeStyle='rgba(244,236,216,.4)'; c.lineWidth=1; c.beginPath(); c.arc(x,y,r,0,7); c.stroke(); } }},
+);
+/* space frames: decorations that overlap the photo edges + a small motif in the bottom-left corner,
+   so the theme still reads on strip layouts where photos cover most of the background */
+function edgeSparkles(c,W,H,top,seed,cols,n){ const R=rng(seed);
+  for(let i=0;i<n;i++){ const side=i%4; let x,y;
+    if(side===0){ x=R()*PAD*1.5; y=top+PAD+R()*(H-top-FOOT-PAD); } else if(side===1){ x=W-R()*PAD*1.5; y=top+PAD+R()*(H-top-FOOT-PAD); }
+    else if(side===2){ x=PAD+R()*(W-2*PAD); y=top+R()*PAD*1.3; } else { x=PAD+R()*(W-2*PAD); y=H-FOOT+R()*24; }
+    sparkleP(c,x,y,5+R()*10); glowFill(c,cols[i%cols.length],10); } }
+function planetAt(c,x,y,r,col,ring){ c.save(); c.strokeStyle=ring; c.lineWidth=r*.18; c.beginPath(); c.ellipse(x,y,r*1.8,r*.5,-.35,Math.PI*1.06,Math.PI*1.94); c.stroke();
+  c.fillStyle=col; dot(c,x,y,r); c.fillStyle='rgba(255,255,255,.35)'; dot(c,x-r*.35,y-r*.35,r*.3,r*.18); c.beginPath(); c.ellipse(x,y,r*1.8,r*.5,-.35,Math.PI*.06,Math.PI*.94); c.stroke(); c.restore(); }
+const SPACE_DECOR={
+  galaxy:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,101,['#ffffff','#ffd6f5','#cfe2ff'],14); planetAt(c,PAD+40,H-FOOT/2,18,'#ffb3e0','rgba(255,255,255,.85)'); sparkleP(c,PAD+86,H-FOOT/2-22,7); glowFill(c,'#fff',8); },
+  pastelsky:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,102,['#ffffff'],12); },
+  starrynight:(c,W,H,t)=>{ const R=rng(103); for(let i=0;i<12;i++){ const side=i%2; star5(c,side?W-R()*PAD*1.4:R()*PAD*1.4,t+PAD+R()*(H-t-FOOT-PAD),5+R()*8); glowFill(c,'#f5d77a',10); } },
+  constellation:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,104,['#ffffff'],10); const P=[[0,10],[22,-8],[44,4],[66,-14],[86,0]].map(([x,y])=>[PAD+20+x,H-FOOT/2+y]);
+    c.save(); c.strokeStyle='rgba(255,255,255,.7)'; c.lineWidth=1.6; c.beginPath(); P.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y)); c.stroke(); c.fillStyle='#fff'; c.shadowColor='#fff'; c.shadowBlur=8; P.forEach(([x,y],i)=>dot(c,x,y,i%2?2.5:3.6)); c.restore(); },
+  cosmicpink:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,105,['#ffffff','#ffe8f6'],14); planetAt(c,PAD+36,H-FOOT/2+4,16,'#c9b8ff','rgba(255,255,255,.9)'); planetAt(c,PAD+88,H-FOOT/2-18,8,'#9fe3ff','rgba(255,255,255,.8)'); },
+  shooting:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,106,['#ffffff'],12); const x=PAD+120, y=H-FOOT/2-14, lg=c.createLinearGradient(x,y,x-110,y+40); lg.addColorStop(0,'rgba(255,255,255,.95)'); lg.addColorStop(1,'rgba(255,255,255,0)');
+    c.save(); c.strokeStyle=lg; c.lineWidth=4; c.lineCap='round'; c.beginPath(); c.moveTo(x,y); c.lineTo(x-110,y+40); c.stroke(); c.restore(); star5(c,x,y,10); glowFill(c,'#fff6c9',12); },
+  aurora:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,107,['#ffffff','#bfffe9','#d9c8ff'],14); },
+  moonphase:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,108,['#fff4dc'],10); },
+};
+FRAMES.filter(F=>SPACE_DECOR[F.id]).forEach(F=>{ const own=F.fg; F.fg=(c,W,H,t,o)=>{ SPACE_DECOR[F.id](c,W,H,t||0); if(own) own(c,W,H,t,o); }; });
+const FRAME_CATS = ['ทั้งหมด','ดวงดาว','ตัดแปะ','มินิมอล','น่ารัก','สีแสบ','ออร่า','เรโทร'];
 
 /* ================= PHOTO SHAPES ================= */
 function fillPhoto(c,img,x,y,w,h){
@@ -1071,6 +1133,30 @@ ART_SETS.tape = {
   tapeClear:c=>washi(c,c=>{ c.fillStyle='rgba(255,255,255,.58)'; c.fillRect(-.5,-.15,1,.3); }),
   tapeGingham:c=>washi(c,c=>{ c.fillStyle='rgba(255,255,255,.82)'; c.fillRect(-.5,-.15,1,.3); c.fillStyle='rgba(240,120,150,.3)'; for(let x=-.5;x<.5;x+=.08) c.fillRect(x,-.15,.04,.3); for(let y=-.15;y<.15;y+=.08) c.fillRect(-.5,y,1,.04); }),
   tapeHearts:c=>washi(c,c=>{ c.fillStyle='rgba(255,240,244,.88)'; c.fillRect(-.5,-.15,1,.3); c.fillStyle='rgba(214,52,80,.75)'; let k=0; for(let x=-.42;x<.5;x+=.12){ heartP(c,x,(k++%2?-.04:.03),.035); c.fill(); } }),
+};
+ART_SETS.space = {
+  moon:c=>{ sInk(c,()=>crescentPath(c,0,0,.42,.2,-.14,.36),'#fff3b8'); c.fillStyle='#fff3b8'; sparkleP(c,.3,.26,.08); c.fill(); sparkleP(c,.36,-.3,.05); c.fill(); },
+  shootingStar:c=>{ const g=c.createLinearGradient(-.46,.42,.1,-.06); g.addColorStop(0,'rgba(255,214,120,0)'); g.addColorStop(1,'rgba(255,214,120,.95)'); c.save(); c.strokeStyle=g; c.lineWidth=.1; c.lineCap='round'; c.beginPath(); c.moveTo(-.46,.42); c.lineTo(.08,-.04); c.stroke(); c.restore();
+    c.save(); c.translate(.16,-.12); c.rotate(.2); sInk(c,()=>star5(c,0,0,.26),'#ffd84d'); c.restore(); },
+  rocket:c=>{ c.save(); c.rotate(.6);
+    sInk(c,()=>{ c.beginPath(); c.moveTo(-.08,.3); c.quadraticCurveTo(0,.56,.08,.3); c.closePath(); },'#ff9a3c',.8);
+    for(const sd of [-1,1]) sInk(c,()=>{ c.beginPath(); c.moveTo(sd*.1,.08); c.lineTo(sd*.23,.31); c.lineTo(sd*.1,.27); c.closePath(); },'#ff5c8a',.8);
+    sInk(c,()=>{ c.beginPath(); c.moveTo(0,-.44); c.bezierCurveTo(.16,-.3,.14,.1,.11,.3); c.lineTo(-.11,.3); c.bezierCurveTo(-.14,.1,-.16,-.3,0,-.44); c.closePath(); },'#ffffff');
+    sInk(c,()=>circ(c,0,-.1,.065),'#9fd4ff',.8); c.restore(); },
+  ufo:c=>{ c.save(); c.fillStyle='rgba(255,240,170,.5)'; c.beginPath(); c.moveTo(-.12,.08); c.lineTo(-.3,.46); c.lineTo(.3,.46); c.lineTo(.12,.08); c.closePath(); c.fill(); c.restore();
+    sInk(c,()=>{ c.beginPath(); c.ellipse(0,-.06,.18,.18,0,Math.PI,0); c.closePath(); },'#b9e4ff');
+    sInk(c,()=>{ c.beginPath(); c.ellipse(0,0,.44,.12,0,0,Math.PI*2); },'#c9b6ff'); c.fillStyle='#ffd84d'; for(const x of [-.26,-.09,.09,.26]) dot(c,x,.01,.03); },
+  ringPlanet:c=>{ sInk(c,()=>{ c.beginPath(); c.ellipse(0,0,.47,.13,-.35,Math.PI*1.08,Math.PI*1.92); },null); sInk(c,()=>circ(c,0,0,.27),'#ffb3d9');
+    c.fillStyle='rgba(255,255,255,.4)'; dot(c,-.09,-.1,.08,.04); sInk(c,()=>{ c.beginPath(); c.ellipse(0,0,.47,.13,-.35,Math.PI*.08,Math.PI*.92); },null); },
+  stars3:c=>{ sInk(c,()=>star5(c,-.12,.08,.3),'#ffd84d'); sInk(c,()=>star5(c,.26,-.24,.15),'#ffe98a',.8); sInk(c,()=>star5(c,.28,.26,.1),'#fff3b8',.7); },
+  constellation:c=>{ sInk(c,()=>circ(c,0,0,.44),'#1d2552'); const P=[[-.26,.12],[-.12,-.06],[.02,.02],[.16,-.18],[.27,-.02],[.08,.24]];
+    c.save(); c.strokeStyle='rgba(255,255,255,.65)'; c.lineWidth=.015; c.beginPath(); P.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y)); c.stroke();
+    c.fillStyle='#fff'; c.shadowColor='#fff'; c.shadowBlur=4; P.forEach(([x,y],i)=>dot(c,x,y,i%2?.022:.032)); c.restore();
+    c.fillStyle='rgba(255,255,255,.5)'; const R=rng(4); for(let i=0;i<14;i++){ const a=R()*6.28, r=R()*.38; dot(c,Math.cos(a)*r,Math.sin(a)*r,.008); } },
+  comet:c=>{ const g=c.createLinearGradient(.3,-.3,-.45,.45); g.addColorStop(0,'rgba(150,210,255,.9)'); g.addColorStop(1,'rgba(150,210,255,0)'); c.save(); c.fillStyle=g; c.beginPath(); c.moveTo(.18,-.34); c.lineTo(-.48,.42); c.lineTo(.34,-.18); c.closePath(); c.fill(); c.restore();
+    sInk(c,()=>circ(c,.26,-.26,.12),'#dff1ff'); },
+  astronaut:c=>{ sInk(c,()=>roundRect(c,-.22,.12,.44,.32,.1),'#ffffff'); sInk(c,()=>circ(c,0,-.08,.3),'#ffffff'); sInk(c,()=>roundRect(c,-.2,-.22,.4,.26,.12),'#2c3a6b',.8);
+    c.fillStyle='rgba(255,255,255,.7)'; dot(c,-.1,-.15,.045,.025); c.fillStyle='#ff9ec4'; dot(c,0,.27,.04); },
 };
 const ART = Object.assign({}, ...Object.values(ART_SETS));
 const artIcons={};
