@@ -466,6 +466,13 @@ const LAYOUTS = {
 // extras: glow/grain/vignette/stamp seed the sliders; tint:[colour,alpha] fade:0-100 sparkle:count scale with filter strength
 const FILTERS = {
   normal:['ปกติ','none',{},'ยอดฮิต'],
+  izakaya:['อิซากายะ','saturate(.88) contrast(1.04) sepia(.2)',{grain:14,fade:8,tone:{exp:-.12,hl:-35,sh:26,wh:-12,bl:-22,hi:['#ffa53d',.27],lo:['#3e2410',.26]}},'มูดโทน'],
+  cafebeige:['คาเฟ่เบจ','contrast(1.08) saturate(.86)',{tint:['#ffcf9a',.22],tone:{exp:-.08,hl:-30,sh:42,wh:-20,bl:-48,hi:['#fff0d8',.12]}},'มูดโทน'],
+  moodybrown:['บราวน์มูดี้','contrast(1.02) saturate(.9) sepia(.42)',{vignette:45,grain:16,tone:{exp:-.42,hl:-60,sh:18,wh:-30,bl:-10,hi:['#ff9c3d',.36],lo:['#1a0e06',.36]}},'มูดโทน'],
+  tokyo:['โตเกียวฟิล์ม','brightness(.96) contrast(.76) saturate(.84) hue-rotate(-6deg)',{tint:['#a6d8c8',.26],fade:18,vignette:36,grain:12,tone:{hl:-15,sh:10,lo:['#2f4a46',.14]}},'มูดโทน'],
+  softgreen:['กรีนละมุน','brightness(1.1) contrast(.88) saturate(.8)',{tint:['#d6efc4',.3],glow:18,fade:14,tone:{hl:-22,sh:30,hi:['#ffd6de',.12]}},'มูดโทน'],
+  golden:['ซัมเมอร์ทอง','brightness(1.06) contrast(1.05) saturate(1.1) sepia(.12)',{glow:24,grain:18,fade:10,tone:{hl:-16,sh:20,hi:['#ffd27a',.24]}},'มูดโทน'],
+  creamvintage:['ครีมวินเทจ','contrast(.92) saturate(.82) sepia(.22)',{fade:26,grain:20,tone:{hl:-25,sh:22,bl:12,hi:['#fff1d6',.16],lo:['#6b5640',.12]}},'มูดโทน'],
   kclear:['เกาหลีใส','brightness(1.08) contrast(.94) saturate(.92)',{glow:12,tint:['#cfe3ff',.28]},'ยอดฮิต'],
   soft:['ผิวใส','brightness(1.12) contrast(.92) saturate(1.1)',{glow:15},'ยอดฮิต'],
   dreamy:['ฟุ้งฝัน','brightness(1.06) saturate(1.1)',{glow:45},'ยอดฮิต'],
@@ -493,9 +500,10 @@ const FILTERS = {
   bwsoft:['ขาวดำนุ่ม','grayscale(1) contrast(.9) brightness(1.05)',{fade:30,glow:15},'ขาวดำ'],
   noir:['ขาวดำคม','grayscale(1) contrast(1.4)',{vignette:40,grain:20},'ขาวดำ'],
 };
-const FILTER_GROUPS=['ยอดฮิต','ฟิล์ม','โทนสี','ขาวดำ'];
+const FILTER_GROUPS=['ยอดฮิต','มูดโทน','ฟิล์ม','โทนสี','ขาวดำ'];
 const SLIDERS = [
   ['bright','ความสว่าง',60,140,100], ['contrast','คอนทราสต์',60,150,100], ['sat','ความสดของสี',0,200,100],
+  ['hl','ไฮไลต์ (ส่วนสว่าง)',-100,100,0], ['sh','เงา (ส่วนมืด)',-100,100,0],
   ['warm','โทน เย็น ↔ อุ่น',-50,50,0], ['glow','ฟุ้งละมุน',0,100,0], ['grain','เกรนฟิล์ม',0,100,0], ['vignette','ขอบมืด',0,100,0],
 ];
 const TIMERS = [0,3,5,10];
@@ -521,7 +529,7 @@ const NOTES = [
   ['favorite person','marker','paper','#7a1f2a'], ['style diary','script','plain','#d07aa9'], ['core memory\nunlocked','typer','label','#ffffff'],
   ['light of my life','script','tape','#7a1f3d'], ['you & me','marker','tape','#3b2f2f'], ['pretty boy','typer','paper','#3b2f2f'],
   ['best day ever','typer','label','#161616'], ['our little\ndiary','marker','paper','#b03a5b'], ['เธอคือความสุข','thhand','paper','#7a1f2a'],
-  ['วันนี้ดีที่สุด','thscript','tape','#5a2333'], ['คิดถึงทุกวันเลย','thhand','label','#ffffff'], ['ความทรงจำ\nของเรา','thhand','paper','#3b2f2f'],
+  ['you are my\nfavorite season','marker','plain','#ffe066'], ['today, with you','marker','plain','#ffe066'], ['วันนี้ดีที่สุด','thscript','tape','#5a2333'], ['คิดถึงทุกวันเลย','thhand','label','#ffffff'], ['ความทรงจำ\nของเรา','thhand','paper','#3b2f2f'],
 ];
 
 // every sticker is drawn in code (no emoji) — see ART_SETS / DOODLES below
@@ -1222,6 +1230,25 @@ function applyMatrix(x,w,h,M){
   for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; d[i]=M[0]*r+M[1]*g+M[2]*b+o0; d[i+1]=M[4]*r+M[5]*g+M[6]*b+o1; d[i+2]=M[8]*r+M[9]*g+M[10]*b+o2; }
   x.putImageData(im,0,0);
 }
+/* Lightroom-style tone: exposure, highlights, shadows, whites, blacks (a 256-step curve per channel)
+   plus split toning — shadows and highlights pulled toward their own colours. */
+function hexRgb(h){ const n=parseInt(h.slice(1),16); return [n>>16&255,n>>8&255,n&255]; }
+function toneLUT(t){ const lut=new Uint8ClampedArray(256), ev=Math.pow(2,t.exp||0);
+  for(let i=0;i<256;i++){ const x=Math.min(1,i/255*ev), u=1-x;
+    const y=x + (t.bl||0)/100*.14*Math.pow(u,6) + (t.sh||0)/100*.2*6.75*x*u*u + (t.hl||0)/100*.2*6.75*x*x*u + (t.wh||0)/100*.12*Math.pow(x,6);
+    lut[i]=Math.round(y*255); } return lut; }
+function applyTone(x,W,H,preset,amt,A){
+  const P=preset||{}, t={exp:(P.exp||0)*amt, hl:(P.hl||0)*amt+(A.hl||0), sh:(P.sh||0)*amt+(A.sh||0), wh:(P.wh||0)*amt, bl:(P.bl||0)*amt};
+  const hi=P.hi&&amt?[hexRgb(P.hi[0]),P.hi[1]*amt]:null, lo=P.lo&&amt?[hexRgb(P.lo[0]),P.lo[1]*amt]:null;
+  if(!t.exp&&!t.hl&&!t.sh&&!t.wh&&!t.bl&&!hi&&!lo) return;
+  const lut=toneLUT(t), im=x.getImageData(0,0,W,H), d=im.data;
+  for(let i=0;i<d.length;i+=4){ let r=lut[d[i]], g=lut[d[i+1]], b=lut[d[i+2]];
+    if(hi||lo){ const L=(r*.299+g*.587+b*.114)/255;
+      if(lo){ const w=(1-L)*(1-L)*lo[1]; r+=(lo[0][0]-r)*w; g+=(lo[0][1]-g)*w; b+=(lo[0][2]-b)*w; }
+      if(hi){ const w=L*L*hi[1]; r+=(hi[0][0]-r)*w; g+=(hi[0][1]-g)*w; b+=(hi[0][2]-b)*w; } }
+    d[i]=r; d[i+1]=g; d[i+2]=b; }
+  x.putImageData(im,0,0);
+}
 function fisheye(x,w,h){
   const im=x.getImageData(0,0,w,h), src=new Uint32Array(im.data.buffer.slice(0)), dst=new Uint32Array(im.data.buffer);
   const cx=w/2, cy=h/2, R=Math.hypot(cx,cy);
@@ -1239,6 +1266,7 @@ function processShot(src, cr, seed=0, W=CELL_W, H=CELL_H, adj){
   if(A.fisheye) fisheye(x,W,H);
   const Mp=filterMatrix(F[1]==='none'?'':F[1]).map((v,i)=>IDM[i]+(v-IDM[i])*amt);           // preset, scaled by strength
   applyMatrix(x,W,H, mulM(filterMatrix(`brightness(${A.bright}%) contrast(${A.contrast}%) saturate(${A.sat}%)`), Mp));
+  applyTone(x,W,H,ex.tone,amt,A);
   if(ex.tint && amt){ x.globalCompositeOperation='soft-light'; x.globalAlpha=ex.tint[1]*amt; x.fillStyle=ex.tint[0]; x.fillRect(0,0,W,H); }
   if(ex.fade && amt){ x.globalCompositeOperation='lighten'; x.globalAlpha=amt; const v=Math.round(ex.fade*.8); x.fillStyle=`rgb(${v},${Math.max(0,v-3)},${v+6})`; x.fillRect(0,0,W,H); }
   x.globalCompositeOperation='source-over'; x.globalAlpha=1;
