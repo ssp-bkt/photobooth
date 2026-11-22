@@ -183,6 +183,12 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .stickers button{border:0;background:var(--chip);border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:0;transition:transform .1s}
 .stickers button.art img{width:84%;height:84%}
 .stickers button.meme{grid-column:1/-1;aspect-ratio:auto;justify-content:flex-start;padding:11px 14px;font-size:14px;font-weight:600;text-align:left}
+.ftiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fgh{grid-column:1/-1;font-size:12px;font-weight:600;color:var(--muted);margin-top:6px}
+.ftile{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--ink2);line-height:1.25;text-align:center}
+.ftile canvas{width:100%;height:auto;aspect-ratio:4/3;border-radius:10px;border:2px solid transparent;display:block;background:var(--chip)}
+.ftile.on canvas{border-color:var(--ink)}
+.ftile.on{color:var(--ink);font-weight:600}
 .stickers button.note{white-space:pre-line;line-height:1.25;font-size:17px}
 .lmini.cl{display:block;position:relative;width:54px;height:44px}
 .lmini.cl.story{width:34px}
@@ -315,7 +321,8 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 
       <div class="panels">
       <div class="panel" data-panel="color">
-        <div class="sec"><div class="label">ฟิลเตอร์</div><div class="chips" id="edFilters"></div></div>
+        <div class="sec"><div class="label">ฟิลเตอร์ <span>ตัวอย่างจากรูปของคุณ</span></div><div class="ftiles" id="edFilters"></div>
+          <div class="sl" style="margin-top:12px"><label><span>ความเข้มฟิลเตอร์</span><b id="sv-amount"></b></label><input type="range" id="sl-amount" min="0" max="100"></div></div>
         <div class="sec" id="sliders"></div>
         <label class="switch">วันที่สีส้มแบบกล้องดิจิแคม<input type="checkbox" id="stamp"></label>
         <label class="switch">เลนส์ตาปลา<input type="checkbox" id="fisheye"></label>
@@ -455,19 +462,38 @@ const LAYOUTS = {
   grid4:{name:'2×2', cols:2, rows:2},    grid6:{name:'2×3', cols:2, rows:3},
   collage:{name:'ตัดแปะ', cols:2, rows:2, collage:'land'}, collageS:{name:'ตัดแปะสตอรี่', cols:2, rows:2, collage:'story'},
 };
-// [name, css filter, extras auto-applied in editor]
+// [name, colour ops (CSS-filter syntax), extras, group]
+// extras: glow/grain/vignette/stamp seed the sliders; tint:[colour,alpha] fade:0-100 sparkle:count scale with filter strength
 const FILTERS = {
-  normal:['ปกติ','none'],
-  soft:['ผิวใส','brightness(1.12) contrast(.92) saturate(1.1)',{glow:15}],
-  y2k:['ดิจิแคม Y2K','contrast(1.2) saturate(1.25) brightness(1.08)',{stamp:true,grain:20}],
-  dreamy:['ฟุ้งฝัน','brightness(1.06) saturate(1.1)',{glow:45}],
-  warm:['อบอุ่น','sepia(.25) saturate(1.35) brightness(1.04)'],
-  cool:['เย็นๆ','hue-rotate(12deg) saturate(1.05) brightness(1.06)'],
-  pop:['สีจัด','saturate(1.7) contrast(1.1)'],
-  film:['ฟิล์ม','contrast(1.12) saturate(.85) sepia(.18)',{grain:35,vignette:30}],
-  sepia:['วินเทจ','sepia(.75) contrast(1.05) brightness(1.03)',{vignette:25}],
-  bw:['ขาวดำ','grayscale(1) contrast(1.15)',{grain:15}],
+  normal:['ปกติ','none',{},'ยอดฮิต'],
+  kclear:['เกาหลีใส','brightness(1.08) contrast(.94) saturate(.92)',{glow:12,tint:['#cfe3ff',.28]},'ยอดฮิต'],
+  soft:['ผิวใส','brightness(1.12) contrast(.92) saturate(1.1)',{glow:15},'ยอดฮิต'],
+  dreamy:['ฟุ้งฝัน','brightness(1.06) saturate(1.1)',{glow:45},'ยอดฮิต'],
+  peach:['พีชฟุ้ง','brightness(1.07) contrast(.95) saturate(1.05)',{glow:20,tint:['#ffb08a',.38]},'ยอดฮิต'],
+  sakura:['ซากุระ','brightness(1.08) saturate(1.05)',{glow:25,tint:['#ff9ec8',.42]},'ยอดฮิต'],
+  pastel:['พาสเทล','brightness(1.1) saturate(.75)',{fade:30,tint:['#d9c8ff',.32]},'ยอดฮิต'],
+  sparkle:['ดาวระยิบ','brightness(1.06) saturate(1.1)',{glow:20,sparkle:16},'ยอดฮิต'],
+  film:['ฟิล์ม','contrast(1.12) saturate(.85) sepia(.18)',{grain:35,vignette:30},'ฟิล์ม'],
+  filmwarm:['ฟิล์มอุ่น','contrast(1.08) saturate(1.15) sepia(.15)',{grain:30,tint:['#ffcf8a',.32]},'ฟิล์ม'],
+  disposable:['กล้องใช้แล้วทิ้ง','brightness(1.1) contrast(1.25) saturate(1.2)',{grain:40,vignette:35,stamp:true},'ฟิล์ม'],
+  y2k:['ดิจิแคม Y2K','contrast(1.2) saturate(1.25) brightness(1.08)',{stamp:true,grain:20},'ฟิล์ม'],
+  retro90:['ยุค 90','saturate(.8) sepia(.2) hue-rotate(-8deg)',{grain:30,fade:22,stamp:true},'ฟิล์ม'],
+  polaroid:['โพลารอยด์','contrast(.95) saturate(.9) sepia(.12)',{fade:26,vignette:20,tint:['#e8ffcf',.22]},'ฟิล์ม'],
+  sepia:['วินเทจ','sepia(.75) contrast(1.05) brightness(1.03)',{vignette:25},'ฟิล์ม'],
+  matte:['แมตต์','contrast(.9) saturate(.85)',{fade:42},'ฟิล์ม'],
+  warm:['อบอุ่น','sepia(.25) saturate(1.35) brightness(1.04)',{},'โทนสี'],
+  cool:['เย็นๆ','hue-rotate(12deg) saturate(1.05) brightness(1.06)',{},'โทนสี'],
+  sunset:['แดดเย็น','saturate(1.2) contrast(1.05)',{tint:['#ff9a4a',.45],glow:15},'โทนสี'],
+  ocean:['ฟ้าทะเล','saturate(1.05) brightness(1.04)',{tint:['#5fb4ff',.42]},'โทนสี'],
+  lavender:['ลาเวนเดอร์','brightness(1.05) saturate(.9)',{tint:['#b48cff',.42],glow:10},'โทนสี'],
+  mint:['มินต์','brightness(1.05) saturate(.9)',{tint:['#7fe3c4',.4]},'โทนสี'],
+  night:['ไนท์ซิตี้','contrast(1.15) saturate(1.1)',{tint:['#7a5cff',.42],vignette:30},'โทนสี'],
+  pop:['สีจัด','saturate(1.7) contrast(1.1)',{},'โทนสี'],
+  bw:['ขาวดำ','grayscale(1) contrast(1.15)',{grain:15},'ขาวดำ'],
+  bwsoft:['ขาวดำนุ่ม','grayscale(1) contrast(.9) brightness(1.05)',{fade:30,glow:15},'ขาวดำ'],
+  noir:['ขาวดำคม','grayscale(1) contrast(1.4)',{vignette:40,grain:20},'ขาวดำ'],
 };
+const FILTER_GROUPS=['ยอดฮิต','ฟิล์ม','โทนสี','ขาวดำ'];
 const SLIDERS = [
   ['bright','ความสว่าง',60,140,100], ['contrast','คอนทราสต์',60,150,100], ['sat','ความสดของสี',0,200,100],
   ['warm','โทน เย็น ↔ อุ่น',-50,50,0], ['glow','ฟุ้งละมุน',0,100,0], ['grain','เกรนฟิล์ม',0,100,0], ['vignette','ขอบมืด',0,100,0],
@@ -1164,7 +1190,8 @@ function artIcon(k){ if(artIcons[k]) return artIcons[k]; const cv=document.creat
   c.translate(56,56); c.scale(96,96); ART[k](c); return artIcons[k]=cv.toDataURL(); }
 
 /* ================= COLOUR PROCESSING ================= */
-function defaultAdj(f){ const a={filter:f, stamp:false, fisheye:false}; SLIDERS.forEach(([k,,,,d])=>a[k]=d); return Object.assign(a, FILTERS[f][2]||{}); }
+function defaultAdj(f){ const a={filter:f, stamp:false, fisheye:false, amount:100}; SLIDERS.forEach(([k,,,,d])=>a[k]=d);
+  const ex=(FILTERS[f]||FILTERS.normal)[2]||{}; for(const k of ['glow','grain','vignette','stamp']) if(k in ex) a[k]=ex[k]; return a; }
 let grainTile=null;
 function getGrain(){ if(grainTile) return grainTile; grainTile=document.createElement('canvas'); grainTile.width=grainTile.height=180;
   const g=grainTile.getContext('2d'), im=g.createImageData(180,180);
@@ -1187,9 +1214,10 @@ function opMatrix(n,v){
   return null;
 }
 function mulM(a,b){ const r=[]; for(let i=0;i<3;i++){ for(let j=0;j<3;j++) r.push(a[i*4]*b[j]+a[i*4+1]*b[4+j]+a[i*4+2]*b[8+j]); r.push(a[i*4]*b[3]+a[i*4+1]*b[7]+a[i*4+2]*b[11]+a[i*4+3]); } return r; }
-function applyColorMatrix(x,w,h,filterStr){
-  let M=[1,0,0,0, 0,1,0,0, 0,0,1,0];
-  for(const [n,v] of parseFilter(filterStr)){ const m=opMatrix(n,v); if(m) M=mulM(m,M); }
+const IDM=[1,0,0,0, 0,1,0,0, 0,0,1,0];
+function filterMatrix(str){ let M=IDM; for(const [n,v] of parseFilter(str)){ const m=opMatrix(n,v); if(m) M=mulM(m,M); } return M; }
+function applyColorMatrix(x,w,h,filterStr){ applyMatrix(x,w,h,filterMatrix(filterStr)); }
+function applyMatrix(x,w,h,M){
   const im=x.getImageData(0,0,w,h), d=im.data, o0=M[3]*255, o1=M[7]*255, o2=M[11]*255;
   for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],b=d[i+2]; d[i]=M[0]*r+M[1]*g+M[2]*b+o0; d[i+1]=M[4]*r+M[5]*g+M[6]*b+o1; d[i+2]=M[8]*r+M[9]*g+M[10]*b+o2; }
   x.putImageData(im,0,0);
@@ -1203,27 +1231,36 @@ function fisheye(x,w,h){
 }
 function softBlur(src,w,h){ const a=document.createElement('canvas'); a.width=w/4; a.height=h/4; a.getContext('2d').drawImage(src,0,0,a.width,a.height);
   const b=document.createElement('canvas'); b.width=w/14; b.height=h/14; b.getContext('2d').drawImage(a,0,0,b.width,b.height); return b; }
-function processShot(src, cr){
-  const A=ed.adj, c=document.createElement('canvas'); c.width=CELL_W; c.height=CELL_H;
-  const x=c.getContext('2d',{willReadFrequently:true}), base=FILTERS[A.filter][1], g=cropGeom(src,cr);
-  x.imageSmoothingQuality='high'; x.drawImage(src,g.left,g.top,g.dw,g.dh);
-  if(A.fisheye) fisheye(x,CELL_W,CELL_H);
-  applyColorMatrix(x,CELL_W,CELL_H,`${base==='none'?'':base} brightness(${A.bright}%) contrast(${A.contrast}%) saturate(${A.sat}%)`);
-  if(A.warm){ x.globalCompositeOperation='soft-light'; x.globalAlpha=Math.abs(A.warm)/50*.6; x.fillStyle=A.warm>0?'#ff9a3c':'#3c8cff'; x.fillRect(0,0,CELL_W,CELL_H); }
-  if(A.glow){ const bl=softBlur(c,CELL_W,CELL_H); x.globalCompositeOperation='screen'; x.globalAlpha=A.glow/100*.7; x.imageSmoothingQuality='high'; x.drawImage(bl,0,0,CELL_W,CELL_H); }
-  if(A.vignette){ x.globalCompositeOperation='source-over'; x.globalAlpha=1; const g=x.createRadialGradient(CELL_W/2,CELL_H/2,CELL_H*.35,CELL_W/2,CELL_H/2,CELL_W*.62);
-    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,`rgba(0,0,0,${A.vignette/100*.75})`); x.fillStyle=g; x.fillRect(0,0,CELL_W,CELL_H); }
-  if(A.grain){ x.globalCompositeOperation='overlay'; x.globalAlpha=A.grain/100*.55; x.fillStyle=x.createPattern(getGrain(),'repeat'); x.fillRect(0,0,CELL_W,CELL_H); }
+function processShot(src, cr, seed=0, W=CELL_W, H=CELL_H, adj){
+  const A=adj||ed.adj, F=FILTERS[A.filter]||FILTERS.normal, ex=F[2]||{}, amt=(A.amount??100)/100, k=W/CELL_W;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d',{willReadFrequently:true}), g=cropGeom(src,cr);
+  x.imageSmoothingQuality='high'; x.save(); x.scale(W/CELL_W,H/CELL_H); x.drawImage(src,g.left,g.top,g.dw,g.dh); x.restore();
+  if(A.fisheye) fisheye(x,W,H);
+  const Mp=filterMatrix(F[1]==='none'?'':F[1]).map((v,i)=>IDM[i]+(v-IDM[i])*amt);           // preset, scaled by strength
+  applyMatrix(x,W,H, mulM(filterMatrix(`brightness(${A.bright}%) contrast(${A.contrast}%) saturate(${A.sat}%)`), Mp));
+  if(ex.tint && amt){ x.globalCompositeOperation='soft-light'; x.globalAlpha=ex.tint[1]*amt; x.fillStyle=ex.tint[0]; x.fillRect(0,0,W,H); }
+  if(ex.fade && amt){ x.globalCompositeOperation='lighten'; x.globalAlpha=amt; const v=Math.round(ex.fade*.8); x.fillStyle=`rgb(${v},${Math.max(0,v-3)},${v+6})`; x.fillRect(0,0,W,H); }
   x.globalCompositeOperation='source-over'; x.globalAlpha=1;
-  if(A.stamp){ x.font='700 34px ui-monospace, "Courier New", monospace'; x.textAlign='right'; x.textBaseline='bottom';
-    x.shadowColor='rgba(255,120,20,.9)'; x.shadowBlur=10; x.fillStyle='#ff8a1f'; x.fillText(stampText(), CELL_W-26, CELL_H-20); x.shadowBlur=0; }
+  if(A.warm){ x.globalCompositeOperation='soft-light'; x.globalAlpha=Math.abs(A.warm)/50*.6; x.fillStyle=A.warm>0?'#ff9a3c':'#3c8cff'; x.fillRect(0,0,W,H); }
+  if(A.glow){ const bl=softBlur(c,W,H); x.globalCompositeOperation='screen'; x.globalAlpha=A.glow/100*.7; x.imageSmoothingQuality='high'; x.drawImage(bl,0,0,W,H); }
+  if(A.vignette){ x.globalCompositeOperation='source-over'; x.globalAlpha=1; const vg=x.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,W*.62);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,`rgba(0,0,0,${A.vignette/100*.75})`); x.fillStyle=vg; x.fillRect(0,0,W,H); }
+  if(A.grain){ x.globalCompositeOperation='overlay'; x.globalAlpha=A.grain/100*.55; x.fillStyle=x.createPattern(getGrain(),'repeat'); x.fillRect(0,0,W,H); }
+  x.globalCompositeOperation='source-over'; x.globalAlpha=1;
+  if(ex.sparkle && amt){ const R=rng(97+seed); x.save(); x.fillStyle='#fff'; x.shadowColor='rgba(255,255,255,.95)'; x.shadowBlur=9*k;
+    for(let i=0;i<Math.round(ex.sparkle*amt);i++){ sparkleP(x,R()*W,R()*H,(4+R()*10)*k); x.fill(); } x.restore(); }
+  if(A.stamp){ x.font=`700 ${Math.round(34*k)}px ui-monospace, "Courier New", monospace`; x.textAlign='right'; x.textBaseline='bottom';
+    x.shadowColor='rgba(255,120,20,.9)'; x.shadowBlur=10*k; x.fillStyle='#ff8a1f'; x.fillText(stampText(), W-26*k, H-20*k); x.shadowBlur=0; }
   return c;
 }
 let procPending=false;
-function processShots(){ ed.proc=state.shots.map((s,i)=>s?processShot(s,crop(i)):null); render(); scheduleThumbs(); }
+function processShots(){ ed.proc=state.shots.map((s,i)=>s?processShot(s,crop(i),i):null); render(); scheduleThumbs(); }
+function renderFilterThumbs(){ const i=state.shots.findIndex(Boolean); if(i<0) return;
+  document.querySelectorAll('#edFilters .ftile').forEach(b=>{ const cv=b.querySelector('canvas'), out=processShot(state.shots[i],crop(i),i,cv.width,cv.height,{...defaultAdj(b.dataset.k),fisheye:ed.adj?.fisheye}); cv.getContext('2d').drawImage(out,0,0); }); }
 let cellPending=null;
 function scheduleCell(i){ if(cellPending!==null) return; cellPending=i; requestAnimationFrame(()=>{ const k=cellPending; cellPending=null;
-  if(state.shots[k]) ed.proc[k]=processShot(state.shots[k],crop(k)); render(); }); }
+  if(state.shots[k]) ed.proc[k]=processShot(state.shots[k],crop(k),k); render(); }); }
 function cellAt(p){ if(isCollage()){ const o=[...ed.objects].reverse().find(q=>q.type==='photo'&&hit(q,p)); return o?o.i:-1; }
   const {L,top}=dims();
   for(let i=0;i<L.cols*L.rows;i++){ const x=PAD+(i%L.cols)*(CELL_W+GAP), y=top+PAD+Math.floor(i/L.cols)*(CELL_H+GAP);
@@ -1310,7 +1347,7 @@ async function openEditor(tab){
   ed.adj=defaultAdj(state.filter); syncColorPanel();
   if(isCollage()) ed.objects=presetPhotos(dims().collage).filter(o=>state.shots[o.i]);
   $('#shapeHint').textContent=isCollage()?'แตะเลือกรูปบนภาพก่อน = เปลี่ยนเฉพาะรูปนั้น • ไม่ได้เลือก = เปลี่ยนทุกรูป':'ทรงของรูปแต่ละช่อง ใช้คู่กับกรอบแบบไหนก็ได้';
-  commit(); processShots();
+  commit(); processShots(); setTimeout(renderFilterThumbs,60);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function sizeStage(){ const d=dims(); if(stage.width!==d.W||stage.height!==d.H){ stage.width=layer.width=d.W; stage.height=layer.height=d.H; } }
@@ -1481,7 +1518,8 @@ stage.addEventListener('wheel', e=>{ if(ed.tab!=='crop') return; e.preventDefaul
 
 /* ---- editor panels ---- */
 function syncColorPanel(){
-  setOn($('#edFilters'), [...$('#edFilters').children].find(b=>b.dataset.k===ed.adj.filter));
+  document.querySelectorAll('#edFilters .ftile').forEach(b=>b.classList.toggle('on',b.dataset.k===ed.adj.filter));
+  $('#sl-amount').value=ed.adj.amount??100; $('#sv-amount').textContent=(ed.adj.amount??100)+'%';
   SLIDERS.forEach(([k])=>{ $('#sl-'+k).value=ed.adj[k]; $('#sv-'+k).textContent=ed.adj[k]; });
   $('#stamp').checked=!!ed.adj.stamp; $('#fisheye').checked=!!ed.adj.fisheye;
 }
@@ -1502,10 +1540,14 @@ function buildEditorUI(){
   $('#cropZoom').oninput=e=>{ crop(ed.cropSel).z=+e.target.value/100; scheduleCell(ed.cropSel); };
   $('#cropZoom').onchange=()=>scheduleThumbs();
   $('#cropReset').onclick=()=>{ state.crops[ed.cropSel]={z:1,x:0,y:0}; syncCropPanel(); scheduleCell(ed.cropSel); };
-  $('#cropResetAll').onclick=()=>{ state.crops=[]; syncCropPanel(); processShots(); };
+  $('#cropResetAll').onclick=()=>{ state.crops=[]; syncCropPanel(); processShots(); renderFilterThumbs(); };
   // colour
   const ef=$('#edFilters');
-  for(const [k,[name,css]] of Object.entries(FILTERS)){ const b=chip(name,false,()=>{ const keep=ed.adj.fisheye; ed.adj=defaultAdj(k); ed.adj.fisheye=keep; syncColorPanel(); scheduleProcess(); }, `<span class="fdot" style="filter:${css}"></span>`); b.dataset.k=k; ef.appendChild(b); }
+  FILTER_GROUPS.forEach(gname=>{ const h=document.createElement('div'); h.className='fgh'; h.textContent=gname; ef.appendChild(h);
+    for(const [k,[name,,,grp]] of Object.entries(FILTERS)){ if(grp!==gname) continue;
+      const b=document.createElement('button'); b.className='ftile'; b.dataset.k=k; b.innerHTML=`<canvas width="120" height="90"></canvas><span>${name}</span>`;
+      b.onclick=()=>{ const keep=ed.adj.fisheye; ed.adj=defaultAdj(k); ed.adj.fisheye=keep; syncColorPanel(); scheduleProcess(); }; ef.appendChild(b); } });
+  $('#sl-amount').oninput=e=>{ ed.adj.amount=+e.target.value; $('#sv-amount').textContent=e.target.value+'%'; scheduleProcess(); };
   const sl=$('#sliders');
   SLIDERS.forEach(([k,label,min,max])=>{ const d=document.createElement('div'); d.className='sl';
     d.innerHTML=`<label><span>${label}</span><b id="sv-${k}"></b></label><input type="range" id="sl-${k}" min="${min}" max="${max}">`;
