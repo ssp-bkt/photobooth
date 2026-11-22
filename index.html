@@ -892,7 +892,47 @@ const SPACE_DECOR={
   moonphase:(c,W,H,t)=>{ edgeSparkles(c,W,H,t,108,['#fff4dc'],10); },
 };
 FRAMES.filter(F=>SPACE_DECOR[F.id]).forEach(F=>{ const own=F.fg; F.fg=(c,W,H,t,o)=>{ SPACE_DECOR[F.id](c,W,H,t||0); if(own) own(c,W,H,t,o); }; });
-const FRAME_CATS = ['ทั้งหมด','ดวงดาว','ตัดแปะ','มินิมอล','น่ารัก','สีแสบ','ออร่า','เรโทร'];
+/* ---- linen fabric frames: woven texture + small flat motifs scattered across it ---- */
+const linenCache={};
+function linenTile(base){ if(linenCache[base]) return linenCache[base];
+  const n=180, t=document.createElement('canvas'); t.width=t.height=n; const x=t.getContext('2d'); x.fillStyle=base; x.fillRect(0,0,n,n); const R=rng(parseInt(base.slice(1),16)%9973);
+  for(let y=0;y<n;y+=3){ x.fillStyle=`rgba(255,255,255,${.03+R()*.07})`; x.fillRect(0,y,n,1.4); }          // weft
+  for(let xx=0;xx<n;xx+=3){ x.fillStyle=`rgba(0,0,0,${.04+R()*.09})`; x.fillRect(xx,0,1.4,n); }         // warp
+  for(let i=0;i<260;i++){ x.fillStyle=R()<.5?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)'; x.fillRect(R()*n,R()*n,1+R()*5,1+R()*1.5); } // slubs
+  return linenCache[base]=t; }
+function linen(c,W,H,base){ c.fillStyle=c.createPattern(linenTile(base),'repeat'); c.fillRect(0,0,W,H); }
+const MOTIF={
+  star:(c,x,y,r,col,a)=>{ c.save(); c.translate(x,y); c.rotate(a); star5(c,0,0,r,.48); c.fillStyle=c.strokeStyle=col; c.lineJoin='round'; c.lineWidth=r*.18; c.fill(); c.stroke(); c.restore(); },
+  heart:(c,x,y,r,col,a)=>{ c.save(); c.translate(x,y); c.rotate(Math.sin(a)*.4); heartP(c,0,0,r*.9); c.fillStyle=col; c.fill(); c.restore(); },
+  daisy:(c,x,y,r,col,a)=>{ c.save(); c.translate(x,y); c.rotate(a); c.fillStyle=col; for(let i=0;i<6;i++){ c.rotate(Math.PI/3); c.beginPath(); c.ellipse(0,-r*.55,r*.28,r*.48,0,0,7); c.fill(); } c.fillStyle='#f4c542'; dot(c,0,0,r*.3); c.restore(); },
+  moon:(c,x,y,r,col)=>{ crescentPath(c,x,y,r,r*.45,-r*.3,r*.85); c.fillStyle=col; c.fill(); },
+  cloud:(c,x,y,r,col)=>{ c.fillStyle=col; dot(c,x-r*.5,y+r*.1,r*.45); dot(c,x,y-r*.15,r*.6); dot(c,x+r*.55,y+r*.1,r*.42); c.fillRect(x-r*.5,y+r*.05,r*1.05,r*.5); },
+  cherry:(c,x,y,r,col,a)=>{ c.save(); c.translate(x,y); c.rotate(Math.sin(a)*.3); c.strokeStyle='#5f8f4e'; c.lineWidth=r*.12; c.lineCap='round'; c.beginPath(); c.moveTo(-r*.35,r*.2); c.quadraticCurveTo(-r*.1,-r*.4,r*.15,-r*.75); c.moveTo(r*.4,r*.25); c.quadraticCurveTo(r*.3,-r*.3,r*.15,-r*.75); c.stroke(); c.fillStyle=col; dot(c,-r*.38,r*.35,r*.36); dot(c,r*.42,r*.4,r*.36); c.restore(); },
+  sparkle:(c,x,y,r,col)=>{ sparkleP(c,x,y,r); c.fillStyle=col; c.fill(); },
+};
+function scatter(c,W,H,seed,items){ // jittered grid: evenly spread like printed fabric, never clumped
+  const R=rng(seed), g=118; let i=0;
+  for(let gy=-g/2;gy<H+g/2;gy+=g) for(let gx=-g/2;gx<W+g/2;gx+=g){ if(R()<.12) continue; const it=items[i++%items.length];
+    MOTIF[it[0]](c,gx+R()*g,gy+R()*g,(it[2]||13)*1.6*(.85+R()*.35),it[1],R()*Math.PI*2); } }
+function edgeScatter(c,W,H,top,seed,items,n){ const R=rng(seed);
+  for(let i=0;i<n;i++){ const it=items[i%items.length], side=i%4; let x,y;
+    if(side===0){ x=PAD*.5+R()*PAD*.8; y=top+PAD+R()*(H-top-FOOT-PAD); } else if(side===1){ x=W-PAD*.5-R()*PAD*.8; y=top+PAD+R()*(H-top-FOOT-PAD); }
+    else if(side===2){ x=PAD+R()*(W-2*PAD); y=top+PAD*.5; } else { x=PAD+R()*(W-2*PAD); y=H-FOOT+R()*20; }
+    MOTIF[it[0]](c,x,y,(it[2]||13)*1.45,it[1],R()*Math.PI*2); } }
+[ ['cocoastars','ช็อกโกดาว','#3b2b26','#efe8de',[['star','#e9e4dc',14],['star','#9fc3f2',14]]],
+  ['navygold','กรมท่าดาวทอง','#1f2a44','#f2e6c8',[['star','#f2c86b',13],['star','#f4efe6',11],['sparkle','#f4efe6',8]]],
+  ['oatstars','โอ๊ตดาว','#e9dcc8','#5a4334',[['star','#8a5e45',13],['star','#f4a9b8',13]]],
+  ['sagedaisy','เสจเดซี่','#9fb08f','#ffffff',[['daisy','#ffffff',14],['daisy','#fdf3e1',11]]],
+  ['rosyhearts','ชมพูหัวใจ','#d9a3ad','#fff6f3',[['heart','#b8323f',13],['heart','#fbeee8',12]]],
+  ['denimstars','ยีนส์ดาว','#47648f','#ffffff',[['star','#ffffff',13],['star','#ffd96b',12]]],
+  ['midnightmoon','ดำจันทร์ดาว','#1c1b20','#e6e8ef',[['moon','#d9dce6',13],['star','#d9dce6',10],['sparkle','#ffffff',7]]],
+  ['lavcloud','ลาเวนเดอร์เมฆ','#b9a9d9','#ffffff',[['cloud','#ffffff',14],['sparkle','#ffffff',8],['star','#fff3b0',9]]],
+  ['creamcherry','ครีมเชอร์รี่','#f1e6d2','#7a2e35',[['cherry','#c8283a',13],['heart','#e8a0ae',9]]],
+  ['chocomix','ช็อกโกพาสเทล','#4a332c','#f6e9e2',[['heart','#f6b3c6',11],['star','#a9cdf2',12],['sparkle','#fff3d6',7]]],
+].forEach(([id,name,base,ink,items],k)=>FRAMES.push({id, name, cat:'ผ้าลินิน', ink,
+  bg:(c,W,H)=>{ linen(c,W,H,base); scatter(c,W,H,300+k,items); },
+  fg:(c,W,H,t)=>edgeScatter(c,W,H,t||0,350+k,items,10)}));
+const FRAME_CATS = ['ทั้งหมด','ผ้าลินิน','ดวงดาว','ตัดแปะ','มินิมอล','น่ารัก','สีแสบ','ออร่า','เรโทร'];
 
 /* ================= PHOTO SHAPES ================= */
 function fillPhoto(c,img,x,y,w,h){
