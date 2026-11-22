@@ -934,47 +934,8 @@ function edgeScatter(c,W,H,top,seed,items,n){ const R=rng(seed);
 ].forEach(([id,name,base,ink,items],k)=>FRAMES.push({id, name, cat:'ผ้าลินิน', ink,
   bg:(c,W,H)=>{ linen(c,W,H,base); scatter(c,W,H,300+k,items); },
   fg:(c,W,H,t)=>edgeScatter(c,W,H,t||0,350+k,items,10)}));
-/* ---- editorial / mixed-media frames: two fabrics, a vintage object tucked under a ribbed-paper photo backing,
-   dried sprigs and a typed note. Photos sit in a column on the right (frame.left = decor space). ---- */
+/* ---- shared vintage helpers ---- */
 function shade(hex,a){ const [r,g,b]=hexRgb(hex), f=a<0?0:255, t=Math.abs(a); return `rgb(${Math.round(r+(f-r)*t)},${Math.round(g+(f-g)*t)},${Math.round(b+(f-b)*t)})`; }
-const texCache={};
-function burlapTile(base){ const key='b'+base; if(texCache[key]) return texCache[key];
-  const n=96, t=document.createElement('canvas'); t.width=t.height=n; const x=t.getContext('2d'), R=rng(parseInt(base.slice(1),16)%7919);
-  x.fillStyle=shade(base,-.42); x.fillRect(0,0,n,n);
-  for(let y=0;y<n;y+=8){ x.fillStyle=shade(base,(R()-.5)*.12); x.fillRect(0,y+1,n,5.2); }
-  for(let xx=0,k=0;xx<n;xx+=8,k++) for(let y=0,j=0;y<n;y+=8,j++) if((k+j)%2===0){ x.fillStyle=shade(base,.06+(R()-.5)*.12); x.fillRect(xx+1,y,5.2,8); }
-  for(let i=0;i<120;i++){ x.fillStyle=R()<.5?'rgba(255,255,255,.12)':'rgba(0,0,0,.15)'; x.fillRect(R()*n,R()*n,1+R()*4,1); }
-  return texCache[key]=t; }
-function ribbedTile(base){ const key='r'+base; if(texCache[key]) return texCache[key];
-  const t=document.createElement('canvas'); t.width=8; t.height=8; const x=t.getContext('2d');
-  x.fillStyle=base; x.fillRect(0,0,8,8); x.fillStyle=shade(base,-.18); x.fillRect(0,0,3,8); x.fillStyle=shade(base,.08); x.fillRect(4,0,1,8);
-  return texCache[key]=t; }
-function vinyl(c,cx,cy,R,label,labelInk){
-  c.save(); c.shadowColor='rgba(0,0,0,.35)'; c.shadowBlur=18; c.shadowOffsetY=6; c.fillStyle='#232224'; circ(c,cx,cy,R); c.fill(); c.restore();
-  c.save(); c.strokeStyle='rgba(255,255,255,.05)'; c.lineWidth=1.2; for(let r=R*.38;r<R*.98;r+=R*.018){ circ(c,cx,cy,r); c.stroke(); } c.restore();
-  c.save(); circ(c,cx,cy,R); c.clip(); const g=c.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
-  g.addColorStop(.3,'rgba(255,255,255,0)'); g.addColorStop(.47,'rgba(255,255,255,.17)'); g.addColorStop(.55,'rgba(255,255,255,0)'); g.addColorStop(.7,'rgba(255,255,255,.08)'); g.addColorStop(.8,'rgba(255,255,255,0)');
-  c.fillStyle=g; c.fillRect(cx-R,cy-R,2*R,2*R); c.restore();
-  c.fillStyle=label; circ(c,cx,cy,R*.33); c.fill(); c.fillStyle=labelInk; c.textAlign='center'; c.textBaseline='middle';
-  c.font=`italic ${Math.round(R*.075)}px "Instrument Serif", serif`; c.fillText('side A',cx,cy-R*.15);
-  c.font=`700 ${Math.round(R*.055)}px "Dancing Script", cursive`; c.fillText('chaechae records',cx,cy+R*.17);
-  c.fillStyle='#efe9df'; circ(c,cx,cy,R*.035); c.fill(); }
-function cassette(c,cx,cy,w,rot,body,label){ const h=w*.63; c.save(); c.translate(cx,cy); c.rotate(rot);
-  c.save(); c.shadowColor='rgba(0,0,0,.3)'; c.shadowBlur=14; c.shadowOffsetY=5; c.fillStyle=body; roundRect(c,-w/2,-h/2,w,h,w*.04); c.fill(); c.restore();
-  c.fillStyle=label; roundRect(c,-w*.43,-h*.4,w*.86,h*.5,w*.02); c.fill();
-  c.fillStyle='rgba(40,30,30,.75)'; c.font=`400 ${Math.round(w*.08)}px "Nanum Pen Script", cursive`; c.textAlign='left'; c.textBaseline='middle'; c.fillText('mixtape for you ♡',-w*.38,-h*.3);
-  c.fillStyle='#2a2626'; roundRect(c,-w*.28,-h*.16,w*.56,h*.22,h*.11); c.fill();
-  for(const sd of [-1,1]){ c.fillStyle='#efe9df'; circ(c,sd*w*.17,-h*.05,h*.085); c.fill(); c.fillStyle='#2a2626'; for(let k=0;k<6;k++){ const a=k*Math.PI/3; c.fillRect(sd*w*.17+Math.cos(a)*h*.05-1.5,-h*.05+Math.sin(a)*h*.05-1.5,3,3); } }
-  c.fillStyle=shade(body,-.22); c.beginPath(); c.moveTo(-w*.32,h/2); c.lineTo(-w*.25,h*.25); c.lineTo(w*.25,h*.25); c.lineTo(w*.32,h/2); c.closePath(); c.fill(); c.restore(); }
-function filmStrip(c,x,y,w,len,rot,tint){ c.save(); c.translate(x,y); c.rotate(rot);
-  c.save(); c.shadowColor='rgba(0,0,0,.3)'; c.shadowBlur=10; c.fillStyle='#2a1d14'; c.fillRect(-w/2,0,w,len); c.restore();
-  c.fillStyle='rgba(255,230,190,.85)'; for(let yy=8;yy<len-8;yy+=w*.22){ c.fillRect(-w/2+w*.06,yy,w*.1,w*.12); c.fillRect(w/2-w*.16,yy,w*.1,w*.12); }
-  for(let yy=w*.12;yy<len-w*.7;yy+=w*.84){ c.fillStyle=tint; c.fillRect(-w*.3,yy,w*.6,w*.72); c.fillStyle='rgba(0,0,0,.2)'; c.fillRect(-w*.3,yy+w*.46,w*.6,w*.26); } c.restore(); }
-function monoCamera(c,cx,cy,w,rot){ const h=w*.62; c.save(); c.translate(cx,cy); c.rotate(rot);
-  c.save(); c.shadowColor='rgba(0,0,0,.35)'; c.shadowBlur=14; c.shadowOffsetY=5; c.fillStyle='#262626'; roundRect(c,-w*.3,-h*.62,w*.24,h*.18,6); c.fill(); roundRect(c,-w/2,-h/2,w,h,w*.06); c.fill(); c.restore();
-  c.fillStyle='#3a3a3a'; c.fillRect(-w/2,-h*.12,w,h*.24); const g=c.createRadialGradient(-w*.04,-h*.06,2,0,0,h*.36); g.addColorStop(0,'#6b6b6b'); g.addColorStop(1,'#0e0e0e');
-  c.fillStyle='#bdbdbd'; circ(c,0,0,h*.38); c.fill(); c.fillStyle=g; circ(c,0,0,h*.31); c.fill(); c.fillStyle='rgba(255,255,255,.35)'; dot(c,-h*.1,-h*.12,h*.06,h*.035);
-  c.fillStyle='#d9d9d9'; roundRect(c,w*.24,-h*.4,w*.16,h*.14,4); c.fill(); c.restore(); }
 function sprig(c,x,y,len,rot,stem,leaf,bloom){ c.save(); c.translate(x,y); c.rotate(rot); c.strokeStyle=stem; c.lineWidth=2.2; c.lineCap='round';
   c.beginPath(); c.moveTo(0,0); c.quadraticCurveTo(len*.12,-len*.5,0,-len); c.stroke();
   for(let k=1;k<10;k++){ const t=k/10, py=-len*t, px=len*.12*Math.sin(t*Math.PI)*.9, sd=k%2?1:-1;
@@ -986,28 +947,64 @@ function notePaper(c,x,y,w,h,rot,text,col,ink){ c.save(); c.translate(x,y); c.ro
   c.fillStyle=ink; const lines=text.split('\n'), fs=Math.round(Math.min(h*.17,w*.09)); c.font=`400 ${fs}px "Special Elite", monospace`; c.textAlign='left'; c.textBaseline='middle';
   lines.forEach((l,i)=>c.fillText(l,-w/2+w*.08,(i-(lines.length-1)/2)*fs*1.35)); c.restore(); }
 function artAt(c,k,x,y,size,rot){ c.save(); c.translate(x,y); c.rotate(rot); c.scale(size,size); ART[k](c); c.restore(); }
-function editorialBg(c,W,H,top,o){ const L=o.left, sx=L+PAD*.4;
-  linen(c,W,H,o.fabA);
-  c.save(); c.beginPath(); c.rect(sx,0,W-sx,H); c.clip(); c.fillStyle=c.createPattern(o.burlap?burlapTile(o.fabB):linenTile(o.fabB),'repeat'); c.fillRect(sx,0,W-sx,H); c.restore();
-  o.deco(c,W,H,L);                                            // objects tuck under the backing
-  const bx=L+PAD-18, by=top+PAD-18; c.save(); c.shadowColor='rgba(0,0,0,.3)'; c.shadowBlur=16; c.shadowOffsetY=5;
-  c.fillStyle=c.createPattern(ribbedTile(o.backing),'repeat'); c.fillRect(bx,by,W-bx-PAD+18,H-by-14); c.restore(); }
-[ {id:'edvinyl', name:'แผ่นเสียงพีช', ink:'#f3e3e6', left:250, fabA:'#efe2dc', fabB:'#b39474', burlap:true, backing:'#5b2633',
-    deco:(c,W,H,L)=>{ vinyl(c,L*.4,H*.6,Math.min(L*.95,H*.3),'#e8b9a6','#5b2633'); sprig(c,L*.36,H*.36,Math.min(220,H*.3),.25,'#7a5a3c','#9a7b55','#e8c9b5');
-      notePaper(c,L*.5,H*.86,230,110,-.06,'you make ordinary\ndays feel like\na song','#f6f1e8','#5a4a3a'); }},
-  {id:'edcassette', name:'เทปคาสเซ็ต', ink:'#e9eef7', left:250, fabA:'#5f7697', fabB:'#ece4d5', burlap:false, backing:'#1f2a44',
-    deco:(c,W,H,L)=>{ sprig(c,L*.3,H*.84,Math.min(240,H*.32),-.15,'#6f7d5c','#8c9a72','#ffffff'); artAt(c,'ticket',L*.58,H*.62,170,.18);
-      cassette(c,L*.52,H*.36,L*1.05,-.22,'#e9e2d4','#f6c9d1'); }},
-  {id:'edfilm', name:'ฟิล์มเนกาทีฟ', ink:'#efe6da', left:240, fabA:'#aab79b', fabB:'#c9b28f', burlap:true, backing:'#3a2a20',
-    deco:(c,W,H,L)=>{ filmStrip(c,L*.42,-20,110,H*.75,.12,'rgba(232,170,110,.55)'); sprig(c,L*.24,H*.97,Math.min(260,H*.35),.2,'#5d6b55','#8fa08a');
-      notePaper(c,L*.5,H*.83,220,96,.05,'and the light\nwas perfect','#f4efe6','#4a3a2c'); }},
-  {id:'edletter', name:'จดหมายรัก', ink:'#4a3a2c', left:250, fabA:'#f1eadf', fabB:'#cdb08b', burlap:true, backing:'#efe7d9',
-    deco:(c,W,H,L)=>{ artAt(c,'envelope',L*.5,H*.3,260,-.12); artAt(c,'waxSeal',L*.64,H*.36,90,.1); sprig(c,L*.3,H*.74,Math.min(230,H*.3),-.2,'#6b5a45','#8c7a5c','#c98b8f');
-      notePaper(c,L*.52,H*.89,210,90,-.04,'keep this day\nforever','#fbf8f2','#5a4a3a'); }},
-  {id:'edmono', name:'โมโนแกลเลอรี่', ink:'#efefef', left:240, fabA:'#d8d6d2', fabB:'#3b3937', burlap:true, backing:'#161616',
-    deco:(c,W,H,L)=>{ monoCamera(c,L*.5,H*.32,L*.9,-.15); sprig(c,L*.28,H*.8,Math.min(240,H*.32),.12,'#8a8a8a','#b5b5b5','#f2f2f2');
-      notePaper(c,L*.52,H*.9,190,84,.05,'frame by\nframe','#ffffff','#333333'); }},
-].forEach(f=>FRAMES.push({id:f.id, name:f.name, cat:'วินเทจอาร์ต', ink:f.ink, left:f.left, bg:(c,W,H,t)=>editorialBg(c,W,H,t||0,f)}));
+/* ---- original vintage concepts: album page, film-lab envelope, postcard, cinema ticket, herbarium ---- */
+function paperFibers(c,W,H,seed,light){ const R=rng(seed); for(let i=0;i<W*H/700;i++){ c.fillStyle=light?`rgba(255,255,255,${.035+R()*.06})`:`rgba(70,45,20,${.03+R()*.05})`; c.fillRect(R()*W,R()*H,1+R()*6,.8); } }
+function foxing(c,W,H,seed){ const R=rng(seed); for(let i=0;i<Math.max(6,W*H/45000);i++){ const x=R()*W, y=R()*H, r=6+R()*26, g=c.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,'rgba(160,110,50,.18)'); g.addColorStop(1,'rgba(160,110,50,0)'); c.fillStyle=g; c.fillRect(x-r,y-r,2*r,2*r); } }
+function photoCorner(c,x,y,dir,col){ const s=36; c.save(); c.translate(x,y); c.rotate(dir*Math.PI/2);
+  c.beginPath(); c.moveTo(-7,-7); c.lineTo(s,-7); c.lineTo(-7,s); c.closePath(); c.shadowColor='rgba(0,0,0,.35)'; c.shadowBlur=4; c.shadowOffsetY=2; c.fillStyle=col; c.fill();
+  c.shadowColor='transparent'; c.strokeStyle='rgba(255,255,255,.2)'; c.lineWidth=1.5; c.beginPath(); c.moveTo(s-5,-3); c.lineTo(-3,s-5); c.stroke(); c.restore(); }
+function paperTape(c,x,y,w,rot,col){ c.save(); c.translate(x,y); c.rotate(rot); tapePath(c,w,w*.3); c.fillStyle=col; c.fill(); c.restore(); }
+function airmail(c,W,H,b){ c.save(); c.beginPath(); c.rect(0,0,W,H); c.rect(b,b,W-2*b,H-2*b); c.clip('evenodd'); const s=26;
+  for(let k=-H;k<W+H;k+=s*3) [['#c8372d',0],['#f6efe2',s],['#2f5aa8',2*s]].forEach(([col,o])=>{ c.fillStyle=col; c.beginPath(); c.moveTo(k+o,0); c.lineTo(k+o+s,0); c.lineTo(k+o+s-H,H); c.lineTo(k+o-H,H); c.closePath(); c.fill(); });
+  c.restore(); }
+function stampLandscape(c,x,y,w,h){ c.save(); c.beginPath(); c.rect(x,y,w,h); c.clip(); c.beginPath(); c.rect(x,y,w,h); const r=5, st=14;
+  for(let px=x+st/2;px<x+w;px+=st){ c.moveTo(px+r,y); c.arc(px,y,r,0,7); c.moveTo(px+r,y+h); c.arc(px,y+h,r,0,7); }
+  for(let py=y+st/2;py<y+h;py+=st){ c.moveTo(x+r,py); c.arc(x,py,r,0,7); c.moveTo(x+w+r,py); c.arc(x+w,py,r,0,7); }
+  c.fillStyle='#fffaf0'; c.fill('evenodd'); c.restore();
+  const ix=x+10, iy=y+10, iw=w-20, ih=h-20, g=c.createLinearGradient(0,iy,0,iy+ih); g.addColorStop(0,'#9cc4e8'); g.addColorStop(1,'#f6d6c2'); c.fillStyle=g; c.fillRect(ix,iy,iw,ih);
+  c.fillStyle='#ffd27a'; dot(c,ix+iw*.68,iy+ih*.36,iw*.13); c.fillStyle='#7aa36a'; c.beginPath(); c.moveTo(ix,iy+ih); c.quadraticCurveTo(ix+iw*.3,iy+ih*.45,ix+iw*.62,iy+ih); c.fill();
+  c.fillStyle='#5d8a52'; c.beginPath(); c.moveTo(ix+iw*.3,iy+ih); c.quadraticCurveTo(ix+iw*.7,iy+ih*.55,ix+iw,iy+ih*.8); c.lineTo(ix+iw,iy+ih); c.fill();
+  c.fillStyle='#3b4a6b'; c.font='700 11px Anuphan, sans-serif'; c.textAlign='left'; c.textBaseline='top'; c.fillText('chaechae',ix+4,iy+4); }
+function postmark(c,x,y,r,col){ c.save(); c.strokeStyle=col; c.fillStyle=col; c.lineWidth=2; c.beginPath(); c.arc(x,y,r,0,7); c.stroke(); c.beginPath(); c.arc(x,y,r*.78,0,7); c.stroke();
+  c.font=`700 ${Math.round(r*.26)}px "Special Elite", monospace`; c.textAlign='center'; c.textBaseline='middle'; c.fillText('CHAECHAE',x,y-r*.22); c.fillText('POST',x,y+r*.08); c.font=`400 ${Math.round(r*.22)}px "Special Elite", monospace`; c.fillText(String(new Date().getFullYear()),x,y+r*.4);
+  for(let k=0;k<4;k++){ c.beginPath(); for(let xx=x+r+6;xx<x+r+110;xx+=3) c.lineTo(xx,y-r*.45+k*r*.3+Math.sin(xx*.12)*3); c.stroke(); } c.restore(); }
+FRAMES.push(
+  {id:'album', name:'อัลบั้มคุณยาย', cat:'วินเทจอาร์ต', ink:'#efe7da',
+    bg:(c,W,H)=>{ fill(c,W,H,'#2b2420'); paperFibers(c,W,H,5,true); },
+    fg:(c,W,H,t,o)=>{ for(const q of o.cells){ photoCorner(c,q.x,q.y,0,'#141110'); photoCorner(c,q.x+q.w,q.y,1,'#141110'); photoCorner(c,q.x+q.w,q.y+q.h,2,'#141110'); photoCorner(c,q.x,q.y+q.h,3,'#141110'); }
+      const q=o.cells[0]; sprig(c,q.x+q.w-40,q.y+150,150,-.55,'#c9b48a','#d8c79f','#f2d7c8'); paperTape(c,q.x+q.w-78,q.y+64,92,-.55,'rgba(240,230,205,.8)');
+      if(o.fx!=null){ c.save(); c.fillStyle='rgba(239,231,218,.85)'; c.font='400 32px "Nanum Pen Script", cursive'; c.textAlign='left'; c.textBaseline='middle'; c.fillText('our little memories ~',(o.left||0)+PAD,H-FOOT/2-4); c.restore(); } }},
+  {id:'photolab', name:'ซองร้านล้างรูป', cat:'วินเทจอาร์ต', ink:'#5a3a2a', top:96,
+    bg:(c,W,H)=>{ fill(c,W,H,'#f3ead8'); paperFibers(c,W,H,9,false);
+      c.fillStyle='#c8372d'; c.fillRect(0,0,W,52); c.fillStyle='#f6eedd'; c.textBaseline='middle'; c.textAlign='left';
+      c.font='700 26px Anuphan, sans-serif'; c.fillText('chaechae',PAD,27); const tw=c.measureText('chaechae').width; c.font='italic 400 27px "Instrument Serif", serif'; c.fillText('photo lab',PAD+tw+10,28);
+      c.textAlign='right'; c.font='600 14px Anuphan, sans-serif'; c.fillText('FILM · DEVELOP · PRINT',W-PAD,28);
+      c.fillStyle='#5a3a2a'; c.textAlign='left'; c.font='400 16px "Special Elite", monospace'; c.fillText('ORDER No. 0214     ☑ glossy   ☐ matte',PAD,76);
+      c.strokeStyle='rgba(90,58,42,.35)'; c.lineWidth=1; c.beginPath(); c.moveTo(PAD,92); c.lineTo(W-PAD,92); c.stroke(); },
+    fg:(c,W,H,t,o)=>{ const q=o.cells[o.cells.length-1]; c.save(); c.translate(q.x+96,q.y+q.h-46); c.rotate(-.22); c.globalAlpha=.78; c.strokeStyle='#2f5aa8'; c.lineWidth=3;
+      c.beginPath(); c.arc(0,0,58,0,7); c.stroke(); c.beginPath(); c.arc(0,0,48,0,7); c.stroke(); c.fillStyle='#2f5aa8'; c.textAlign='center'; c.textBaseline='middle';
+      c.font='700 15px "Special Elite", monospace'; c.fillText('DEVELOPED',0,-5); c.font='400 12px "Special Elite", monospace'; c.fillText('with love',0,13); c.restore(); }},
+  {id:'postcard', name:'โปสการ์ด', cat:'วินเทจอาร์ต', ink:'#3b4a6b', left:230,
+    bg:(c,W,H)=>{ fill(c,W,H,'#f6efe2'); paperFibers(c,W,H,13,false); airmail(c,W,H,14); const L=230;
+      c.strokeStyle='rgba(59,74,107,.35)'; c.lineWidth=1.2; c.beginPath(); c.moveTo(L+PAD*.5,44); c.lineTo(L+PAD*.5,H-44); c.stroke();
+      stampLandscape(c,PAD+4,PAD+12,92,114); postmark(c,PAD+150,PAD+78,40,'rgba(59,74,107,.7)');
+      c.fillStyle='#3b4a6b'; c.font='400 34px "Nanum Pen Script", cursive'; c.textAlign='left'; c.textBaseline='alphabetic'; let y=PAD+214;
+      for(const l of ['wish you were','here with us ♡','','love,','us & the camera']){ if(y>H-60) break; c.fillText(l,PAD+6,y); c.strokeStyle='rgba(59,74,107,.22)'; c.beginPath(); c.moveTo(PAD,y+9); c.lineTo(L,y+9); c.stroke(); y+=48; } }},
+  {id:'cinema', name:'ตั๋วหนังรอบพิเศษ', cat:'วินเทจอาร์ต', ink:'#7a1e24', top:104,
+    bg:(c,W,H)=>{ fill(c,W,H,'#f4e6c8'); paperFibers(c,W,H,17,false);
+      c.fillStyle='#7a1e24'; c.fillRect(0,0,W,64);
+      c.save(); c.fillStyle='#ffe08a'; c.shadowColor='rgba(255,220,120,.9)'; c.shadowBlur=8; for(let x=18;x<W;x+=26){ dot(c,x,9,3.6); dot(c,x,55,3.6); } c.restore();
+      c.fillStyle='#f6ead2'; c.textAlign='center'; c.textBaseline='middle'; c.font='700 25px Anuphan, sans-serif'; c.fillText('NOW SHOWING',W/2,32);
+      c.fillStyle='#7a1e24'; c.font='400 17px "Special Elite", monospace'; c.fillText('★ starring: us ★     ADMIT ONE',W/2,86);
+      const py=H-FOOT+10; c.save(); c.setLineDash([7,6]); c.strokeStyle='rgba(122,30,36,.55)'; c.lineWidth=2; c.beginPath(); c.moveTo(26,py); c.lineTo(W-26,py); c.stroke(); c.restore();
+      c.save(); c.globalCompositeOperation='destination-out'; dot(c,0,py,18); dot(c,W,py,18); dot(c,0,40+64,14); dot(c,W,40+64,14); c.restore(); }},
+  {id:'herbarium', name:'สมุดพรรณไม้', cat:'วินเทจอาร์ต', ink:'#4a3b25',
+    bg:(c,W,H)=>{ fill(c,W,H,'#efe6cf'); paperFibers(c,W,H,21,false); foxing(c,W,H,4); },
+    fg:(c,W,H,t,o)=>{ o.cells.forEach((q,i)=>{ const lft=i%2===0, x=lft?q.x-4:q.x+q.w+4, y=q.y+q.h*.5;
+        sprig(c,x,y+70,150,lft?-.35:.35,'#7b6a45','#9a8a5c',i%3===1?'#c99a8b':null); paperTape(c,x,y+34,62,lft?.45:-.45,'rgba(235,224,196,.88)'); });
+      if(o.fx!=null){ const lx=(o.left||0)+PAD, ly=H-FOOT+22; c.save(); c.fillStyle='#f7f0dd'; c.fillRect(lx,ly,236,62); c.strokeStyle='#4a3b25'; c.lineWidth=1.5; c.strokeRect(lx,ly,236,62); c.strokeRect(lx+4,ly+4,228,54);
+        c.fillStyle='#4a3b25'; c.font='400 14px "Special Elite", monospace'; c.textAlign='left'; c.textBaseline='middle'; c.fillText('SPECIMEN No. 26',lx+14,ly+22); c.fillText('us — in full bloom',lx+14,ly+42); c.restore(); } }},
+);
 const FRAME_CATS = ['ทั้งหมด','วินเทจอาร์ต','ผ้าลินิน','ดวงดาว','ตัดแปะ','มินิมอล','น่ารัก','สีแสบ','ออร่า','เรโทร'];
 
 /* ================= PHOTO SHAPES ================= */
@@ -1483,7 +1480,8 @@ function drawBase(c,o){
   const fy=H-FOOT/2;
   // character faces sit in the footer centre; a typed caption takes that spot instead
   const cx0=(o.left||0)+(W-(o.left||0))/2; // centre of the photo column
-  if(F.fg) F.fg(c,W,H,top,{fx:o.title?null:cx0, fy});
+  const cells=[]; for(let r=0;r<L.rows;r++) for(let col=0;col<L.cols;col++) cells.push({x:(o.left||0)+PAD+col*(CELL_W+GAP), y:top+PAD+r*(CELL_H+GAP), w:CELL_W, h:CELL_H});
+  if(F.fg) F.fg(c,W,H,top,{fx:o.title?null:cx0, fy, cells, left:o.left||0});
   // faint brand watermark on the corner of the last photo (like a social-app watermark)
   const li=L.cols*L.rows-1, wx=(o.left||0)+PAD+(li%L.cols)*(CELL_W+GAP), wy=top+PAD+Math.floor(li/L.cols)*(CELL_H+GAP);
   const Sw=cellShape(o,li), sp=(Sw.wm||((x,y,w,h)=>({x:x+w-26,y:y+h-26,align:'right',onPhoto:true})))(wx,wy,CELL_W,CELL_H);
