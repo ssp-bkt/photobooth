@@ -94,8 +94,9 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .sec{margin-bottom:22px}
 
 /* camera */
-.cam{position:relative;aspect-ratio:4/3;max-height:calc(100vh - 290px);min-height:260px;border-radius:18px;overflow:hidden;background:#0b0b0c;isolation:isolate}
+.cam{position:relative;aspect-ratio:4/3;max-height:calc(100vh - 360px);min-height:240px;border-radius:18px;overflow:hidden;background:#0b0b0c;isolation:isolate}
 .cam video{width:100%;height:100%;object-fit:cover;display:block}
+#livefx{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .mirror{transform:scaleX(-1)}
 .msg{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;text-align:center;padding:24px;background:#141416;font-size:15px;line-height:1.5}
 .msg .ic{width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:24px}
@@ -162,7 +163,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .tabs button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .hscroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-bottom:12px}
 /* side panel: tabs on top, content scrolls inside, main button pinned at the bottom — no page scrolling on desktop */
-.side{display:flex;flex-direction:column;position:sticky;top:16px;max-height:calc(100vh - 32px);padding-bottom:16px}
+.side{display:flex;flex-direction:column;position:sticky;top:16px;max-height:calc(100vh - 92px);padding-bottom:16px}
 .side .tabs{flex:none}
 .side .panels{flex:1 1 auto;min-height:0;overflow-y:auto;margin:0 -6px;padding:2px 6px 8px;overscroll-behavior:contain}
 .sidefoot{flex:none;padding-top:14px;border-top:1px solid var(--line)}
@@ -183,6 +184,12 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .stickers button{border:0;background:var(--chip);border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:0;transition:transform .1s}
 .stickers button.art img{width:84%;height:84%}
 .stickers button.meme{grid-column:1/-1;aspect-ratio:auto;justify-content:flex-start;padding:11px 14px;font-size:14px;font-weight:600;text-align:left}
+.bfrow{margin-top:12px}
+.bfilters{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;scroll-snap-type:x proximity}
+.bfilters::-webkit-scrollbar{display:none}
+.bft{flex:none;width:68px;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--ink2);line-height:1.2;text-align:center;scroll-snap-align:start}
+.bft canvas{width:68px;height:51px;border-radius:9px;border:2px solid transparent;display:block;background:var(--chip)}
+.bft.on canvas{border-color:var(--ink)}.bft.on{color:var(--ink);font-weight:600}
 .ftiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .fgh{grid-column:1/-1;font-size:12px;font-weight:600;color:var(--muted);margin-top:6px}
 .ftile{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--ink2);line-height:1.25;text-align:center}
@@ -273,6 +280,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
       <img class="deco d3" data-deco="pixelHeart" alt=""><img class="deco d4" data-deco="cherries" alt="">
       <div class="cam" id="cam">
         <video id="video" class="mirror" playsinline muted></video>
+        <canvas id="livefx" class="mirror" hidden></canvas>
         <div class="msg" id="camMsg">
           <div class="ic">📷</div>
           <div id="camMsgText">กำลังเปิดกล้อง… กด “อนุญาต” ให้เว็บใช้กล้อง</div>
@@ -285,6 +293,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
         <div class="camhint" id="camHint">แตะจอ หรือกด Space เพื่อถ่าย</div>
         <button class="camshoot" id="camShoot" aria-label="ถ่ายรูป"><span></span></button>
       </div>
+      <div class="bfrow"><div class="bfilters" id="boothFilters"></div></div>
       <div class="lpwrap"><div class="lp" id="lp"></div><div class="lptext" id="lpText"></div></div>
     </div>
 
@@ -609,14 +618,18 @@ function buildBoothUI(){
     lc.appendChild(b);
   }
   seg($('#timerSeg'), TIMERS.map(t=>[t,t?`${t} วิ`:'ไม่ตั้ง']), state.timer, k=>{ state.timer=+k; renderSummary(); renderLive(); });
-  $('#mirror').onchange=e=>{ state.mirror=e.target.checked; video.classList.toggle('mirror',state.mirror); };
+  $('#mirror').onchange=e=>{ state.mirror=e.target.checked; video.classList.toggle('mirror',state.mirror); $('#livefx').classList.toggle('mirror',state.mirror); };
+  const bf=$('#boothFilters'); FILTER_GROUPS.forEach(g=>{ for(const [k,[name,,,grp]] of Object.entries(FILTERS)){ if(grp!==g) continue;
+    const b=document.createElement('button'); b.className='bft'+(k===state.filter?' on':''); b.dataset.k=k; b.innerHTML=`<canvas width="136" height="102"></canvas><span>${name}</span>`;
+    b.onclick=()=>{ state.filter=k; setOn(bf,b); renderSummary(); renderLive(); }; bf.appendChild(b); } });
+  renderBoothFilterThumbs();
   // any choice in the booth panel refreshes the one-line summary above the shoot button
   $('#booth .panels').addEventListener('click', ()=>setTimeout(renderSummary,0));
   renderLive();
 }
 function renderSummary(){
   const L=LAYOUTS[state.layout];
-  $('#summary').textContent=`${L.name} · ${state.timer?`นับถอยหลัง ${state.timer} วิ ถ่ายต่อกันอัตโนมัติ`:'ไม่ตั้งเวลา กดถ่ายทีละรูป'} · ถ่ายเสร็จค่อยแต่ง`;
+  $('#summary').textContent=`${L.name} · ฟิลเตอร์ ${FILTERS[state.filter][0]} · ${state.timer?`นับถอยหลัง ${state.timer} วิ ถ่ายต่อกันอัตโนมัติ`:'ไม่ตั้งเวลา กดถ่ายทีละรูป'} · ถ่ายเสร็จค่อยแต่ง`;
 }
 
 function renderLive(){
@@ -642,6 +655,7 @@ async function startCam(){
     video.srcObject=stream; await video.play();
     $('#camMsg').hidden=true;
     navigator.mediaDevices.enumerateDevices().then(ds=>{ $('#camFlip').hidden = ds.filter(d=>d.kind==='videoinput').length<2; }).catch(()=>{});
+    setTimeout(renderBoothFilterThumbs,900);
   }catch(e){
     camFail(e.name==='NotAllowedError' ? 'ยังไม่ได้อนุญาตให้ใช้กล้อง — อนุญาตที่แถบที่อยู่เว็บ แล้วกดเปิดใหม่' : 'หากล้องไม่เจอ ลองเสียบกล้องหรืออัปโหลดรูปแทนนะ');
   }
@@ -697,7 +711,7 @@ function flipCam(){
   if(state.busy) return;
   state.facing = state.facing==='user' ? 'environment' : 'user';
   state.mirror = state.facing==='user'; $('#mirror').checked=state.mirror;
-  video.classList.toggle('mirror',state.mirror);
+  video.classList.toggle('mirror',state.mirror); $('#livefx').classList.toggle('mirror',state.mirror);
   startCam();
 }
 async function handleUpload(files){
@@ -1848,6 +1862,30 @@ async function savePdf(){
     btn.textContent='บันทึกแล้ว ✓'; setTimeout(()=>btn.textContent='บันทึก PDF',1800);
   }catch(e){ console.error(e); btn.textContent='บันทึกไม่สำเร็จ ลองใหม่'; setTimeout(()=>btn.textContent='บันทึก PDF',2200); }
 }
+
+/* ================= LIVE FILTER PREVIEW (booth) =================
+   The camera image runs through the same colour engine as the editor at a small size, so what you
+   see while shooting matches the result. Shots stay unfiltered, so the filter can still change later. */
+const liveSrc=document.createElement('canvas'); let liveLast=0;
+function sampleFrame(w,h){ // camera frame (or a soft placeholder when there is no camera), 4:3
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d');
+  if(stream && video.videoWidth){ const r=Math.max(w/video.videoWidth,h/video.videoHeight), dw=video.videoWidth*r, dh=video.videoHeight*r; x.drawImage(video,(w-dw)/2,(h-dh)/2,dw,dh); }
+  else { const g=x.createLinearGradient(0,0,0,h); g.addColorStop(0,'#9cc4f0'); g.addColorStop(.6,'#f2d8c9'); g.addColorStop(1,'#7aa36a'); x.fillStyle=g; x.fillRect(0,0,w,h);
+    x.fillStyle='#e8b896'; dot(x,w/2,h*.48,w*.14,h*.22); x.fillStyle='#3a2a22'; x.beginPath(); x.ellipse(w/2,h*.33,w*.17,h*.14,0,Math.PI,0); x.fill(); x.fillStyle='#e85a7a'; x.fillRect(w*.33,h*.72,w*.34,h*.28); }
+  return c; }
+function renderBoothFilterThumbs(){ const src=sampleFrame(CELL_W/2,CELL_H/2);
+  document.querySelectorAll('#boothFilters .bft').forEach(b=>{ const cv=b.querySelector('canvas'), out=processShot(src,{z:1,x:0,y:0},0,cv.width,cv.height,defaultAdj(b.dataset.k)); cv.getContext('2d').drawImage(out,0,0); }); }
+function liveLoop(t){
+  requestAnimationFrame(liveLoop);
+  const lv=$('#livefx'), on=state.filter!=='normal' && stream && video.videoWidth && !$('#booth').hidden;
+  if(!on){ if(!lv.hidden) lv.hidden=true; return; }
+  if(t-liveLast<50) return; liveLast=t;                       // ~20 fps is plenty for a preview
+  const W=480, H=360; liveSrc.width=W; liveSrc.height=H; const r=Math.max(W/video.videoWidth,H/video.videoHeight), dw=video.videoWidth*r, dh=video.videoHeight*r;
+  liveSrc.getContext('2d').drawImage(video,(W-dw)/2,(H-dh)/2,dw,dh);
+  const out=processShot(liveSrc,{z:1,x:0,y:0},0,W,H,defaultAdj(state.filter));
+  if(lv.width!==W){ lv.width=W; lv.height=H; } lv.getContext('2d').drawImage(out,0,0); lv.hidden=false;
+}
+requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
 visitCounter();
