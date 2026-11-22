@@ -254,6 +254,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 .mkqr{display:flex;gap:12px;align-items:center;margin-top:12px}
 .mkterms{margin-top:14px;padding:12px 14px;border:1px solid var(--line,rgba(0,0,0,.1));border-radius:16px;background:rgba(255,255,255,.55);font-size:12.5px;line-height:1.65}
 .mkterms b{font-size:13px}.mkterms ul{margin:6px 0 8px;padding-left:18px}.mkterms li{margin:2px 0}
+.mkterms a.btn{text-decoration:none;display:flex;justify-content:center;box-sizing:border-box}
 .mkterms .no{color:#b0405e;font-weight:600}.mkterms .switch{font-size:13px;font-weight:600}
 .ownerbadge{display:inline-block;margin-top:12px;padding:4px 12px;border-radius:99px;background:#161616;color:#fff;font-size:12px}
 .mkqr .btn{flex-direction:column;gap:2px;line-height:1.3}
@@ -2005,7 +2006,7 @@ function afterEventUI(){
 
 /* ---- owner key: only a SHA-256 hash lives in the code; open ?owner and type the key once per device ---- */
 const OWNER_HASH='adeac42ff69f9de230b4731a4dcf6e33413b971ad657f6cdd90e89a52be602a7';
-const DONATE_URL=''; // paste the donation page link here; the button stays hidden while empty
+const DONATE_URL='https://ezdn.app/everythingbyssp'; // paste the donation page link here; the button stays hidden while empty
 function isOwner(){ try{ return localStorage.getItem('cc-owner')===OWNER_HASH; }catch(e){ return false; } }
 async function sha256hex(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
 async function ownerLogin(){
