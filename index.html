@@ -252,6 +252,10 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 .mkprev{background:var(--chip);border-radius:16px;display:flex;align-items:center;justify-content:center;padding:14px;min-height:240px}
 .mkprev canvas{max-width:100%;max-height:300px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.15))}
 .mkqr{display:flex;gap:12px;align-items:center;margin-top:12px}
+.mkterms{margin-top:14px;padding:12px 14px;border:1px solid var(--line,rgba(0,0,0,.1));border-radius:16px;background:rgba(255,255,255,.55);font-size:12.5px;line-height:1.65}
+.mkterms b{font-size:13px}.mkterms ul{margin:6px 0 8px;padding-left:18px}.mkterms li{margin:2px 0}
+.mkterms .no{color:#b0405e;font-weight:600}.mkterms .switch{font-size:13px;font-weight:600}
+.ownerbadge{display:inline-block;margin-top:12px;padding:4px 12px;border-radius:99px;background:#161616;color:#fff;font-size:12px}
 .mkqr .btn{flex-direction:column;gap:2px;line-height:1.3}
 .mkqr .btn small{color:var(--muted);font-size:11.5px}
 #mkQR{width:104px;height:104px;image-rendering:pixelated;border-radius:10px;flex:none}
@@ -448,6 +452,17 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
       </div>
       <label class="switch" style="margin-top:12px">ล็อกจำนวนช่อง (แขกเปลี่ยนไม่ได้)<input type="checkbox" id="mkLock" checked></label>
       <label class="f" for="mkLogo">ลิงก์รูปโลโก้ (ไม่ใส่ก็ได้)</label><input type="text" id="mkLogo" placeholder="https://… .png">
+      <div class="mkterms" id="mkTerms">
+        <b>เงื่อนไขการใช้งาน</b>
+        <ul>
+          <li>งานส่วนตัว / งานเล็ก (วันเกิด งานเลี้ยง งานโรงเรียน) — ใช้ฟรี สนับสนุนผู้สร้างได้ตามใจ</li>
+          <li>งานใหญ่ / องค์กร / งานที่มีสปอนเซอร์ — ขอสนับสนุนผู้สร้างอย่างน้อย 299 บาทต่องาน</li>
+          <li class="no">ห้ามนำไปหารายได้เชิงพาณิชย์เพิ่มเติม เช่น เก็บเงินแขกต่อรูป ขายต่อ หรือรับจ้างทำบูธด้วยเว็บนี้</li>
+        </ul>
+        <a class="btn" id="mkDonate" href="#" target="_blank" rel="noopener" hidden style="width:100%;margin-bottom:8px">สนับสนุนผู้สร้าง ✦</a>
+        <label class="switch">ฉันอ่านและยอมรับเงื่อนไขแล้ว<input type="checkbox" id="mkAgree"></label>
+      </div>
+      <span class="ownerbadge" id="mkOwner" hidden>โหมดเจ้าของ ✓ ใช้ได้ฟรีทุกอย่าง</span>
     </div>
     <div>
       <div class="mkprev"><canvas id="mkPrev"></canvas></div>
@@ -1967,6 +1982,17 @@ function afterEventUI(){
   document.title=`${ed.title} — chaechae`;
 }
 
+/* ---- owner key: only a SHA-256 hash lives in the code; open ?owner and type the key once per device ---- */
+const OWNER_HASH='adeac42ff69f9de230b4731a4dcf6e33413b971ad657f6cdd90e89a52be602a7';
+const DONATE_URL=''; // paste the donation page link here; the button stays hidden while empty
+function isOwner(){ try{ return localStorage.getItem('cc-owner')===OWNER_HASH; }catch(e){ return false; } }
+async function sha256hex(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+async function ownerLogin(){
+  if(isOwner()){ if(confirm('เครื่องนี้อยู่ในโหมดเจ้าของแล้ว — ต้องการออกจากโหมดเจ้าของไหม')) try{ localStorage.removeItem('cc-owner'); }catch(e){} return; }
+  const k=prompt('ใส่คีย์เจ้าของ'); if(!k) return;
+  let h=''; try{ h=await sha256hex(k.trim()); }catch(e){ alert('เบราว์เซอร์นี้ตรวจคีย์ไม่ได้'); return; }
+  if(h===OWNER_HASH){ try{ localStorage.setItem('cc-owner',h); }catch(e){} alert('เปิดโหมดเจ้าของแล้ว ✓ เครื่องนี้จะจำไว้'); } else alert('คีย์ไม่ถูกต้อง');
+}
 /* ---- maker (for shops / organisers) ---- */
 const mk={font:'script', built:false, logoUrl:'', logoImg:null};
 let qrLib=null;
@@ -1986,6 +2012,8 @@ function buildMaker(){
   ['mkName','mkSub','mkFrame','mkLayout','mkShape','mkLock'].forEach(id=>{ $('#'+id).addEventListener('input',mkUpdate); $('#'+id).addEventListener('change',mkUpdate); });
   $('#mkLogo').addEventListener('change',()=>{ const u=$('#mkLogo').value.trim(); loadLogo(u,im=>{ mk.logoImg=im; if(u && !im) $('#mkHint').textContent='โหลดโลโก้จากลิงก์นี้ไม่ได้ (ต้องเป็นลิงก์รูป https ที่อนุญาตให้เว็บอื่นใช้)'; mkUpdate(); }); });
   $('#mkClose').onclick=()=>$('#maker').close();
+  if(DONATE_URL){ $('#mkDonate').href=DONATE_URL; $('#mkDonate').hidden=false; }
+  $('#mkAgree').addEventListener('change',mkUpdate);
   $('#mkCopy').onclick=async()=>{ const b=$('#mkCopy'); try{ await navigator.clipboard.writeText($('#mkLink').value); }catch(e){ $('#mkLink').select(); document.execCommand('copy'); } b.textContent='คัดลอกแล้ว ✓'; setTimeout(()=>b.textContent='คัดลอกลิงก์',1600); };
   $('#mkOpen').onclick=()=>window.open($('#mkLink').value,'_blank','noopener');
   $('#mkCard').onclick=downloadQRCard;
@@ -1997,6 +2025,9 @@ async function mkUpdate(){
   cv.width=Math.round(d.W*s); cv.height=Math.round(d.H*s); const x=cv.getContext('2d'); x.setTransform(s,0,0,s,0,0);
   drawBase(x,{...d,F,S,imgs:[],title:c.n||'ชื่องานของคุณ',titleFont:c.ft,subtitle:c.s,logo:mk.logoImg,date:'',photos:d.collage?presetPhotos(d.collage):null});
   state.layout=keep;
+  const own=isOwner(), ok=own||$('#mkAgree').checked; $('#mkTerms').hidden=own; $('#mkOwner').hidden=!own;
+  if(c.n && !ok){ $('#mkOut').hidden=true; $('#mkHint').hidden=false; $('#mkHint').textContent='ติ๊กยอมรับเงื่อนไขการใช้งานก่อน แล้วลิงก์กับ QR จะขึ้นตรงนี้'; return; }
+  if($('#mkHint').textContent.startsWith('ติ๊กยอมรับ')) $('#mkHint').textContent='ใส่ชื่องานเพื่อสร้างลิงก์';
   $('#mkOut').hidden=!c.n; $('#mkHint').hidden=!!c.n && !$('#mkHint').textContent.startsWith('โหลดโลโก้');
   if(!c.n) return;
   const link=mkLink(c); $('#mkLink').value=link;
@@ -2005,7 +2036,7 @@ async function mkUpdate(){
 function openMaker(){ buildMaker(); $('#maker').showModal(); mkUpdate(); }
 function saveBlob(b,name){ const url=URL.createObjectURL(b), a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
 async function downloadQRCard(){
-  const c=mkCfg(); if(!c.n) return; const link=mkLink(c);
+  const c=mkCfg(); if(!c.n || !(isOwner()||$('#mkAgree').checked)) return; const link=mkLink(c);
   try{ await Promise.all([document.fonts.load(fontCSS(c.ft,96)), document.fonts.load('italic 44px "Instrument Serif"'), document.fonts.load('600 44px Anuphan')]); }catch(e){}
   const q=await qrCanvas(link,16), W=1080, H=1350, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const x=cv.getContext('2d');
   auraBg(x,W,H,'#fff7f2',['#ffc4d8','#e2d4ff','#ffe2b8']);
@@ -2019,6 +2050,7 @@ async function downloadQRCard(){
   x.fillStyle='#161616'; x.font='italic 400 52px "Instrument Serif", serif'; x.fillText('scan me ✦',W/2,1112);
   x.font='500 28px Anuphan, sans-serif'; x.fillStyle='#6b6570'; x.fillText('สแกนด้วยกล้องมือถือ → ถ่าย แต่ง เซฟรูปได้ทันที ไม่ต้องลงแอป',W/2,1166);
   x.font='700 36px "Dancing Script", cursive'; x.fillStyle='rgba(22,22,22,.5)'; x.fillText('chaechae',W/2,1290);
+  if(!isOwner()){ x.font='500 20px Anuphan, sans-serif'; x.fillStyle='rgba(22,22,22,.42)'; x.fillText('ใช้ภายในงานนี้เท่านั้น · ห้ามนำไปใช้เชิงพาณิชย์เพิ่มเติม',W/2,1328); }
   cv.toBlob(b=>saveBlob(b,`chaechae-qr-${c.n.replace(/[^\w฀-๿-]+/g,'-').slice(0,30)}.png`),'image/png');
 }
 
@@ -2026,7 +2058,7 @@ async function downloadQRCard(){
 async function visitCounter(){
   const live=/github\.io$/.test(location.hostname), url='https://abacus.jasoncameron.dev';
   let counted=false; try{ counted=sessionStorage.getItem('cc-counted')==='1'; }catch(e){}
-  const path=(live && !counted)?'hit':'get';
+  const path=(live && !counted && !isOwner())?'hit':'get';
   try{
     const r=await fetch(`${url}/${path}/chaechae-photobooth/visits`); if(!r.ok) return;
     const j=await r.json(); if(typeof j.value!=='number') return;
@@ -2147,6 +2179,7 @@ buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
 $('#openMaker').onclick=openMaker;
 $('#printBtn').onclick=openPrinter;
 if(new URLSearchParams(location.search).has('maker')) openMaker();
+if(new URLSearchParams(location.search).has('owner')){ history.replaceState(null,'',location.pathname); setTimeout(ownerLogin,300); }
 document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));$('#shoot').onclick=shoot;
 $('#camShoot').onclick=e=>{ e.stopPropagation(); shoot(); };
 $('#camFlip').onclick=e=>{ e.stopPropagation(); flipCam(); };
