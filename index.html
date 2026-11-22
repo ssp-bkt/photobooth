@@ -1458,7 +1458,8 @@ function drawCollageBase(c,o){
   if(o.subtitle){ c.save(); c.font='500 24px Anuphan, sans-serif'; c.fillStyle=F.ink; c.globalAlpha=.7; c.textAlign='center'; c.textBaseline='middle'; c.fillText(o.subtitle,W/2,H-m+8); c.restore(); }
   if(o.date){ c.save(); c.font='600 36px Caveat, Sriracha, cursive'; c.fillStyle=F.ink; c.globalAlpha=.72; c.textAlign='right'; c.textBaseline='alphabetic'; c.fillText(o.date,W-m,H-m*.7); c.restore(); }
   c.save(); c.font='700 26px "Dancing Script", cursive'; c.fillStyle=F.ink; c.globalAlpha=.45; c.textAlign='left'; c.textBaseline='alphabetic'; c.fillText('chaechae',m,H-m*.7);
-  const tw=c.measureText('chaechae').width; sparkleP(c,m+tw+12,H-m*.7-12,7); c.fill(); c.restore();
+  const tw=c.measureText('chaechae').width; sparkleP(c,m+tw+12,H-m*.7-12,7); c.fill();
+  c.font='600 15px "Dancing Script", cursive'; c.textAlign='right'; c.fillText('by ssp', m+tw-1, H-m*.7+17); c.restore();
 }
 function U(){ return Math.min(1.6, Math.max(.8, Math.sqrt(stage.width*stage.height)/1186)); }
 function cssScale(){ const r=stage.getBoundingClientRect(); return r.width ? stage.width/r.width : 1; }
@@ -1490,7 +1491,9 @@ function drawBase(c,o){
   if(sp.onPhoto){ c.fillStyle='rgba(255,255,255,.66)'; c.shadowColor='rgba(0,0,0,.28)'; c.shadowBlur=6; }
   else { c.fillStyle=sp.color||F.ink; c.globalAlpha=.5; }
   const tw=c.measureText('chaechae').width, sx=sp.align==='right'?sp.x+2:sp.align==='center'?sp.x+tw/2+12:sp.x+tw+12;
-  c.fillText('chaechae', sp.align==='right'?sp.x-16:sp.x, sp.y); sparkleP(c, sp.align==='right'?sx-6:sx, sp.y-5, 6); c.fill(); c.restore();
+  const wx2=sp.align==='right'?sp.x-16:sp.x, wy2=sp.y-7;
+  c.fillText('chaechae', wx2, wy2); sparkleP(c, sp.align==='right'?sx-6:sx, wy2-5, 6); c.fill();
+  c.font='600 13px "Dancing Script", cursive'; const bx=sp.align==='left'?wx2+tw:sp.align==='center'?wx2+tw/2:wx2; c.textAlign='right'; c.fillText('by ssp', bx-1, wy2+17); c.restore();
   if(o.title){ c.save(); let fs=46; c.font=fontCSS(o.titleFont,fs); const maxW=W-PAD*2-(o.logo?160:0)*2; while(c.measureText(o.title).width>maxW && fs>24){ fs-=2; c.font=fontCSS(o.titleFont,fs); }
     c.fillStyle=F.ink; c.textAlign='center'; c.textBaseline='middle'; c.fillText(o.title,cx0,o.subtitle?fy-16:fy-4); c.restore(); }
   if(o.subtitle){ c.save(); c.font='500 21px Anuphan, sans-serif'; c.fillStyle=F.ink; c.globalAlpha=.7; c.textAlign='center'; c.textBaseline='middle'; c.fillText(o.subtitle,cx0,fy+24); c.restore(); }
