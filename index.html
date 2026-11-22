@@ -357,6 +357,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
       </div>
 
       <div class="panel" data-panel="shape" hidden>
+        <div class="chips" id="shapeTarget" style="margin-bottom:12px"></div>
         <div class="tgrid" id="shapeGrid"></div>
         <div class="hint" id="shapeHint">ทรงของรูปแต่ละช่อง ใช้คู่กับกรอบแบบไหนก็ได้</div>
       </div>
@@ -567,7 +568,7 @@ const MEME_TEMPLATES = [
 const state = {layout:'strip4', filter:'normal', timer:3, mirror:true, facing:'user', shots:[], crops:[], busy:false, cancel:false};
 const ed = {
   frame:'white', shape:'round', frameCat:'ทั้งหมด', dateFmt:'num', title:'', titleFont:'script', subtitle:'', logo:null,
-  objects:[], strokes:[], sel:null, tab:'color', adj:null, proc:[], cropSel:0,
+  objects:[], strokes:[], sel:null, tab:'color', adj:null, proc:[], cropSel:0, cellShapes:[], shapeTarget:'all',
   pen:{color:'#ff3d7f', size:7, erase:false},
   txt:{color:'#ffffff', font:'script', style:'shadow'},
   cat:'scrap', doodleColor:'#ffffff', history:[],
@@ -1354,18 +1355,20 @@ function dateText(){
   }
   return '';
 }
+// a slot can override the shape chosen for all slots
+const cellShape=(o,i)=>(o.cellShapes&&o.cellShapes[i]&&SHAPES.find(q=>q.id===o.cellShapes[i]))||o.S;
 function drawBase(c,o){
   if(o.collage) return drawCollageBase(c,o);
   const {F,S,L,W,H,top}=o;
   F.bg(c,W,H,top);
   for(let r=0;r<L.rows;r++) for(let col=0;col<L.cols;col++){ const i=r*L.cols+col;
-    S.draw(c,o.imgs[i]||null,PAD+col*(CELL_W+GAP),top+PAD+r*(CELL_H+GAP),CELL_W,CELL_H,i); }
+    cellShape(o,i).draw(c,o.imgs[i]||null,PAD+col*(CELL_W+GAP),top+PAD+r*(CELL_H+GAP),CELL_W,CELL_H,i); }
   const fy=H-FOOT/2;
   // character faces sit in the footer centre; a typed caption takes that spot instead
   if(F.fg) F.fg(c,W,H,top,{fx:o.title?null:W/2, fy});
   // faint brand watermark on the corner of the last photo (like a social-app watermark)
   const li=L.cols*L.rows-1, wx=PAD+(li%L.cols)*(CELL_W+GAP), wy=top+PAD+Math.floor(li/L.cols)*(CELL_H+GAP);
-  const sp=(S.wm||((x,y,w,h)=>({x:x+w-26,y:y+h-26,align:'right',onPhoto:true})))(wx,wy,CELL_W,CELL_H);
+  const Sw=cellShape(o,li), sp=(Sw.wm||((x,y,w,h)=>({x:x+w-26,y:y+h-26,align:'right',onPhoto:true})))(wx,wy,CELL_W,CELL_H);
   c.save(); c.font='700 23px "Dancing Script", cursive'; c.textAlign=sp.align; c.textBaseline='middle';
   if(sp.onPhoto){ c.fillStyle='rgba(255,255,255,.66)'; c.shadowColor='rgba(0,0,0,.28)'; c.shadowBlur=6; }
   else { c.fillStyle=sp.color||F.ink; c.globalAlpha=.5; }
@@ -1380,7 +1383,7 @@ function drawBase(c,o){
 
 async function openEditor(tab){
   stopCam();
-  ed.objects=[]; ed.strokes=[]; ed.sel=null; ed.history=[]; ed.cropSel=0;
+  ed.objects=[]; ed.strokes=[]; ed.sel=null; ed.history=[]; ed.cropSel=0; ed.cellShapes=[]; ed.shapeTarget='all';
   $(`#tabs [data-tab="${tab||'color'}"]`).click();
   sizeStage();
   $('#booth').hidden=true; $('#editor').hidden=false;
@@ -1388,7 +1391,8 @@ async function openEditor(tab){
   try{ await Promise.all([...['700 40px "Dancing Script"','40px Pacifico','700 40px Caveat','600 40px Caveat','700 40px Charm','40px Sriracha','600 40px Anuphan','40px "Special Elite"','40px "Nanum Pen Script"','italic 40px "Instrument Serif"'].map(f=>document.fonts.load(f))]); }catch(e){}
   ed.adj=defaultAdj(state.filter); syncColorPanel();
   if(isCollage()) ed.objects=presetPhotos(dims().collage).filter(o=>state.shots[o.i]);
-  $('#shapeHint').textContent=isCollage()?'แตะเลือกรูปบนภาพก่อน = เปลี่ยนเฉพาะรูปนั้น • ไม่ได้เลือก = เปลี่ยนทุกรูป':'ทรงของรูปแต่ละช่อง ใช้คู่กับกรอบแบบไหนก็ได้';
+  $('#shapeHint').textContent=isCollage()?'แตะเลือกรูปบนภาพก่อน = เปลี่ยนเฉพาะรูปนั้น • ไม่ได้เลือก = เปลี่ยนทุกรูป':'เลือก “ทุกช่อง” ให้เหมือนกันหมด หรือเลือก/แตะช่องบนรูป แล้วกดทรง = เปลี่ยนเฉพาะช่องนั้น';
+  buildShapeTargets();
   commit(); processShots(); setTimeout(renderFilterThumbs,60);
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -1408,13 +1412,15 @@ function setFrame(id){
 function render(){
   const d=dims(), c=ctx;
   c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,d.W,d.H);
-  drawBase(c,{...d, F:curFrame(), S:curShape(), imgs:ed.proc, title:ed.title, titleFont:ed.titleFont, subtitle:ed.subtitle, logo:ed.logo, date:dateText()});
+  drawBase(c,{...d, F:curFrame(), S:curShape(), cellShapes:ed.cellShapes, imgs:ed.proc, title:ed.title, titleFont:ed.titleFont, subtitle:ed.subtitle, logo:ed.logo, date:dateText()});
   lctx.clearRect(0,0,d.W,d.H);
   for(const s of ed.strokes){ lctx.save(); lctx.globalCompositeOperation=s.erase?'destination-out':'source-over'; lctx.strokeStyle=s.color; lctx.lineWidth=s.size; lctx.lineCap=lctx.lineJoin='round';
     lctx.beginPath(); s.pts.forEach(([x,y],j)=>j?lctx.lineTo(x,y):lctx.moveTo(x,y)); if(s.pts.length===1) lctx.lineTo(s.pts[0][0]+.1,s.pts[0][1]); lctx.stroke(); lctx.restore(); }
   c.drawImage(layer,0,0);
   for(const o of ed.objects) drawObj(c,o);
   if(ed.sel) drawSelection(c,ed.sel);
+  if(ed.tab==='shape' && !d.collage && ed.shapeTarget!=='all'){ const i=ed.shapeTarget, k=cssScale(), x=PAD+(i%d.L.cols)*(CELL_W+GAP), y=d.top+PAD+Math.floor(i/d.L.cols)*(CELL_H+GAP);
+    c.save(); c.setLineDash([12*k,8*k]); c.lineWidth=3*k; c.strokeStyle='#ff3d7f'; c.strokeRect(x-6*k,y-6*k,CELL_W+12*k,CELL_H+12*k); c.restore(); }
   if(ed.tab==='crop'){ const k=cssScale(); c.save(); c.setLineDash([12*k,8*k]); c.lineWidth=3*k; c.strokeStyle='#ff3d7f';
     if(d.collage){ const o=collagePhotos().find(q=>q.i===ed.cropSel); if(o){ const {w,h}=objSize(o); c.translate(o.x,o.y); c.rotate(o.rot); c.strokeRect(-w/2-6*k,-h/2-6*k,w+12*k,h+12*k); } }
     else { const i=ed.cropSel, x=PAD+(i%d.L.cols)*(CELL_W+GAP), y=d.top+PAD+Math.floor(i/d.L.cols)*(CELL_H+GAP); c.strokeRect(x-4*k,y-4*k,CELL_W+8*k,CELL_H+8*k); }
@@ -1428,18 +1434,28 @@ function renderFrameThumbs(){
   const g=$('#frameGrid'); g.innerHTML='';
   FRAMES.filter(F=>(ed.frameCat==='ทั้งหมด'||F.cat===ed.frameCat) && !(isCollage()&&F.top)).forEach(F=>{
     const d=dims(F), s=Math.min(200/d.W, 236/d.H), cv=document.createElement('canvas'); cv.width=Math.round(d.W*s); cv.height=Math.round(d.H*s);
-    const c=cv.getContext('2d'); c.scale(s,s); drawBase(c,{...d,F,S:curShape(),imgs:ed.proc,title:'',date:'',photos:isCollage()?collagePhotos():null});
+    const c=cv.getContext('2d'); c.scale(s,s); drawBase(c,{...d,F,S:curShape(),cellShapes:ed.cellShapes,imgs:ed.proc,title:'',date:'',photos:isCollage()?collagePhotos():null});
     const b=document.createElement('button'); b.className='tile'+(F.id===ed.frame?' on':''); b.appendChild(cv); b.insertAdjacentHTML('beforeend',`<span>${F.name}</span>`);
     b.onclick=()=>{ setOn(g,b); setFrame(F.id); }; g.appendChild(b);
   });
+}
+function buildShapeTargets(){
+  const box=$('#shapeTarget'); box.innerHTML=''; box.hidden=isCollage(); if(isCollage()) return;
+  const n=shotCount(), items=[['all','ทุกช่อง']].concat(Array.from({length:n},(_,i)=>[i,`ช่อง ${i+1}`]));
+  items.forEach(([k,label])=>{ const b=chip(label,k===ed.shapeTarget,()=>{ ed.shapeTarget=k; setOn(box,b); renderShapeThumbs(); render(); }); if(k!=='all' && ed.cellShapes[k]) b.insertAdjacentHTML('beforeend','<span style="opacity:.6">•</span>'); box.appendChild(b); });
 }
 function renderShapeThumbs(){
   const g=$('#shapeGrid'); g.innerHTML='';
   SHAPES.forEach((S,i)=>{
     const cv=document.createElement('canvas'), s=.26, m=34; cv.width=Math.round((CELL_W+m*2)*s); cv.height=Math.round((CELL_H+m*2)*s);
     const c=cv.getContext('2d'); c.scale(s,s); fill(c,CELL_W+m*2,CELL_H+m*2,'#efece6'); S.draw(c, ed.proc[0]||null, m, m, CELL_W, CELL_H, 0);
-    const b=document.createElement('button'); b.className='tile'+(S.id===ed.shape?' on':''); b.style.minHeight='0'; b.appendChild(cv); b.insertAdjacentHTML('beforeend',`<span>${S.name}</span>`);
-    b.onclick=()=>{ ed.shape=S.id; setOn(g,b); if(isCollage()){ (ed.sel?.type==='photo'?[ed.sel]:collagePhotos()).forEach(o=>o.style=S.id); commit(); } render(); renderFrameThumbs(); }; g.appendChild(b);
+    const cur=(!isCollage()&&ed.shapeTarget!=='all')?(ed.cellShapes[ed.shapeTarget]||ed.shape):ed.shape;
+    const b=document.createElement('button'); b.className='tile'+(S.id===cur?' on':''); b.style.minHeight='0'; b.appendChild(cv); b.insertAdjacentHTML('beforeend',`<span>${S.name}</span>`);
+    b.onclick=()=>{ setOn(g,b);
+      if(isCollage()){ ed.shape=S.id; (ed.sel?.type==='photo'?[ed.sel]:collagePhotos()).forEach(o=>o.style=S.id); commit(); }
+      else if(ed.shapeTarget==='all'){ ed.shape=S.id; ed.cellShapes=[]; }
+      else ed.cellShapes[ed.shapeTarget]=S.id;
+      buildShapeTargets(); render(); renderFrameThumbs(); }; g.appendChild(b);
   });
 }
 
@@ -1516,6 +1532,7 @@ stage.addEventListener('pointerdown', e=>{
     if(ed.tab==='crop'){ drag={mode:'czoom', i:ed.cropSel, d0:pinchInfo().d, z0:crop(ed.cropSel).z}; return; }
     if(ed.tab!=='draw' && ed.sel){ const pi=pinchInfo(); drag={mode:'pinch', o:ed.sel, d0:pi.d, a0:pi.a, s0:ed.sel.size, r0:ed.sel.rot, moved:false}; } return; }
   if(pointers.size>2) return;
+  if(ed.tab==='shape' && !isCollage()){ const i=cellAt(p); if(i>=0){ ed.shapeTarget=i; buildShapeTargets(); renderShapeThumbs(); render(); } return; }
   if(ed.tab==='crop'){ const i=cellAt(p); if(i<0) return; ed.cropSel=i; syncCropPanel(); render(); if(state.shots[i]){ const ph=isCollage()&&collagePhotos().find(q=>q.i===i); drag={mode:'pan', i, last:p, k:ph?ph.size/CELL_W:1}; } return; }
   if(ed.tab==='draw'){ const s={color:ed.pen.color, size:ed.pen.size*p.k*(ed.pen.erase?2.2:1), erase:ed.pen.erase, pts:[[p.x,p.y]]}; ed.strokes.push(s); drag={mode:'draw',s}; render(); return; }
   const o=ed.sel;
