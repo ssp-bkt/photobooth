@@ -230,7 +230,7 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .about h1{font-size:16px;font-weight:600;color:var(--ink2);margin:0 0 6px}
 .about p{margin:0 0 6px}
 .support{display:flex;align-items:center;gap:16px;width:max-content;max-width:100%;box-sizing:border-box;margin:18px auto 0;padding:12px 18px 12px 12px;border-radius:20px;background:var(--surface);border:1px solid rgba(0,0,0,.06);text-align:left}
-.support canvas{width:104px;height:104px;flex:none;border-radius:10px;image-rendering:pixelated}
+.support img{width:116px;height:116px;flex:none;border-radius:10px}
 .support b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:2px}.support span{font-size:12.5px;line-height:1.6}
 /* visit counter pill */
 .visits{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:6px 12px;white-space:nowrap}
@@ -257,7 +257,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 .mkqr{display:flex;gap:12px;align-items:center;margin-top:12px}
 .mkterms{margin-top:14px;padding:12px 14px;border:1px solid var(--line,rgba(0,0,0,.1));border-radius:16px;background:rgba(255,255,255,.55);font-size:12.5px;line-height:1.65}
 .mkterms b{font-size:13px}.mkterms ul{margin:6px 0 8px;padding-left:18px}.mkterms li{margin:2px 0}
-.mkdonate{display:flex;align-items:center;gap:12px;margin:4px 0 10px;padding:8px;border-radius:14px;background:#fff}.mkdonate canvas{width:96px;height:96px;flex:none;image-rendering:pixelated}
+.mkdonate{display:flex;align-items:center;gap:12px;margin:4px 0 10px;padding:8px;border-radius:14px;background:#fff}.mkdonate img{width:104px;height:104px;flex:none}
 .mkterms .no{color:#b0405e;font-weight:600}.mkterms .switch{font-size:13px;font-weight:600}
 .ownerbadge{display:inline-block;margin-top:12px;padding:4px 12px;border-radius:99px;background:#161616;color:#fff;font-size:12px}
 .mkqr .btn{flex-direction:column;gap:2px;line-height:1.3}
@@ -417,9 +417,9 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
     <p>chaechae (แชะแชะ) คือตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ ถ่ายรูปแบบโฟโต้บูธเกาหลี 4 ช่อง แถบ 2–3 ช่อง หรือตาราง 2×2 ได้ทันทีผ่านมือถือ iPad หรือคอมพิวเตอร์ เลือกกรอบน่ารัก ใส่สติ๊กเกอร์ ข้อความตัวเขียน ปรับสีรูป แล้วดาวน์โหลดหรือแชร์ได้เลย</p>
     <p>รูปทั้งหมดประมวลผลในเครื่องของคุณ ไม่มีการอัปโหลดรูปขึ้นเซิร์ฟเวอร์</p>
     <button class="btn" id="openMaker" style="margin-top:10px">✦ สำหรับร้านค้า / อีเวนต์ — สร้างลิงก์และ QR เฉพาะงาน</button>
-    <div class="support" id="support" hidden>
-      <canvas id="supportQR" aria-label="QR สนับสนุนผู้สร้าง"></canvas>
-      <div><b>สนับสนุนผู้สร้าง ✦</b><span>ชอบ chaechae ไหม ใช้ฟรีได้เสมอ<br>ถ้าอยากเลี้ยงขนมคนทำ สแกน QR นี้ด้วยมือถือได้เลย</span></div>
+    <div class="support" id="support">
+      <img id="supportQR" src="donate-qr.png" width="353" height="353" alt="QR พร้อมเพย์ สนับสนุนผู้สร้าง" loading="lazy">
+      <div><b>สนับสนุนผู้สร้าง ✦</b><span>ชอบ chaechae ไหม ใช้ฟรีได้เสมอ<br>ถ้าอยากเลี้ยงขนมคนทำ สแกน QR พร้อมเพย์นี้<br>ด้วยแอปธนาคารได้เลย</span></div>
     </div>
   </footer>
 </main>
@@ -467,7 +467,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
           <li>งานใหญ่ / องค์กร / งานที่มีสปอนเซอร์ — ขอสนับสนุนผู้สร้างอย่างน้อย 299 บาทต่องาน</li>
           <li class="no">ห้ามนำไปหารายได้เชิงพาณิชย์เพิ่มเติม เช่น เก็บเงินแขกต่อรูป ขายต่อ หรือรับจ้างทำบูธด้วยเว็บนี้</li>
         </ul>
-        <div class="mkdonate" id="mkDonate" hidden><canvas id="mkDonateQR" aria-label="QR สนับสนุนผู้สร้าง"></canvas><div><b>สนับสนุนผู้สร้าง ✦</b><br>สแกน QR นี้ด้วยมือถือ</div></div>
+        <div class="mkdonate" id="mkDonate"><img src="donate-qr.png" width="353" height="353" alt="QR พร้อมเพย์ สนับสนุนผู้สร้าง" loading="lazy"><div><b>สนับสนุนผู้สร้าง ✦</b><br>สแกน QR พร้อมเพย์ด้วยแอปธนาคาร</div></div>
         <label class="switch">ฉันอ่านและยอมรับเงื่อนไขแล้ว<input type="checkbox" id="mkAgree"></label>
       </div>
       <span class="ownerbadge" id="mkOwner" hidden>โหมดเจ้าของ ✓ ใช้ได้ฟรีทุกอย่าง</span>
@@ -2013,7 +2013,7 @@ function afterEventUI(){
 
 /* ---- owner key: only a SHA-256 hash lives in the code; open ?owner and type the key once per device ---- */
 const OWNER_HASH='adeac42ff69f9de230b4731a4dcf6e33413b971ad657f6cdd90e89a52be602a7';
-const DONATE_URL='https://ezdn.app/everythingbyssp'; // paste the donation page link here; the button stays hidden while empty
+// support QR: donate-qr.png (a PromptPay QR, cropped so no name is printed on the page)
 function isOwner(){ try{ return localStorage.getItem('cc-owner')===OWNER_HASH; }catch(e){ return false; } }
 async function sha256hex(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
 async function ownerLogin(){
@@ -2041,7 +2041,6 @@ function buildMaker(){
   ['mkName','mkSub','mkFrame','mkLayout','mkShape','mkLock'].forEach(id=>{ $('#'+id).addEventListener('input',mkUpdate); $('#'+id).addEventListener('change',mkUpdate); });
   $('#mkLogo').addEventListener('change',()=>{ const u=$('#mkLogo').value.trim(); loadLogo(u,im=>{ mk.logoImg=im; if(u && !im) $('#mkHint').textContent='โหลดโลโก้จากลิงก์นี้ไม่ได้ (ต้องเป็นลิงก์รูป https ที่อนุญาตให้เว็บอื่นใช้)'; mkUpdate(); }); });
   $('#mkClose').onclick=()=>$('#maker').close();
-  if(DONATE_URL) qrCanvas(DONATE_URL,4).then(q=>{ const t=$('#mkDonateQR'); t.width=q.width; t.height=q.height; t.getContext('2d').drawImage(q,0,0); $('#mkDonate').hidden=false; }).catch(()=>{});
   $('#mkAgree').addEventListener('change',mkUpdate);
   $('#mkCopy').onclick=async()=>{ const b=$('#mkCopy'); try{ await navigator.clipboard.writeText($('#mkLink').value); }catch(e){ $('#mkLink').select(); document.execCommand('copy'); } b.textContent='คัดลอกแล้ว ✓'; setTimeout(()=>b.textContent='คัดลอกลิงก์',1600); };
   $('#mkOpen').onclick=()=>window.open($('#mkLink').value,'_blank','noopener');
@@ -2203,7 +2202,6 @@ requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
 visitCounter();
-if(DONATE_URL) qrCanvas(DONATE_URL,4).then(q=>{ const t=$('#supportQR'); t.width=q.width; t.height=q.height; t.getContext('2d').drawImage(q,0,0); $('#support').hidden=false; }).catch(()=>{});
 applyEvent();
 buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
 $('#openMaker').onclick=openMaker;
