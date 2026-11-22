@@ -229,6 +229,9 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .about{margin:32px auto 0;max-width:720px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.7}
 .about h1{font-size:16px;font-weight:600;color:var(--ink2);margin:0 0 6px}
 .about p{margin:0 0 6px}
+.support{display:flex;align-items:center;gap:16px;width:max-content;max-width:100%;box-sizing:border-box;margin:18px auto 0;padding:12px 18px 12px 12px;border-radius:20px;background:var(--surface);border:1px solid rgba(0,0,0,.06);text-align:left}
+.support canvas{width:104px;height:104px;flex:none;border-radius:10px;image-rendering:pixelated}
+.support b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:2px}.support span{font-size:12.5px;line-height:1.6}
 /* visit counter pill */
 .visits{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:6px 12px;white-space:nowrap}
 .visits b{color:var(--ink);font-weight:600}
@@ -414,6 +417,10 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
     <p>chaechae (แชะแชะ) คือตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ ถ่ายรูปแบบโฟโต้บูธเกาหลี 4 ช่อง แถบ 2–3 ช่อง หรือตาราง 2×2 ได้ทันทีผ่านมือถือ iPad หรือคอมพิวเตอร์ เลือกกรอบน่ารัก ใส่สติ๊กเกอร์ ข้อความตัวเขียน ปรับสีรูป แล้วดาวน์โหลดหรือแชร์ได้เลย</p>
     <p>รูปทั้งหมดประมวลผลในเครื่องของคุณ ไม่มีการอัปโหลดรูปขึ้นเซิร์ฟเวอร์</p>
     <button class="btn" id="openMaker" style="margin-top:10px">✦ สำหรับร้านค้า / อีเวนต์ — สร้างลิงก์และ QR เฉพาะงาน</button>
+    <div class="support" id="support" hidden>
+      <canvas id="supportQR" aria-label="QR สนับสนุนผู้สร้าง"></canvas>
+      <div><b>สนับสนุนผู้สร้าง ✦</b><span>ชอบ chaechae ไหม ใช้ฟรีได้เสมอ<br>ถ้าอยากเลี้ยงขนมคนทำ สแกน QR นี้ด้วยมือถือได้เลย</span></div>
+    </div>
   </footer>
 </main>
 <div class="toast" id="toast"></div>
@@ -2196,6 +2203,7 @@ requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
 visitCounter();
+if(DONATE_URL) qrCanvas(DONATE_URL,4).then(q=>{ const t=$('#supportQR'); t.width=q.width; t.height=q.height; t.getContext('2d').drawImage(q,0,0); $('#support').hidden=false; }).catch(()=>{});
 applyEvent();
 buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
 $('#openMaker').onclick=openMaker;
