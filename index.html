@@ -657,7 +657,7 @@ const NOTES = [
 ];
 
 // every sticker is drawn in code (no emoji) — see ART_SETS / DOODLES below
-const STICKER_CATS = [['ตัดแปะ','scrap'],['แมว','cats'],['หมา','dogs'],['สัตว์อื่นๆ','critters'],['เทปกาว','tape'],['ดวงดาว','space'],['โน้ต','notes'],['คำฮิต','words'],['มีม','meme'],['Y2K','y2k'],['โคเก็ตต์','coquette'],['เรโทร','retro'],['น่ารัก','cute'],['ดูเดิล','doodle']];
+const STICKER_CATS = [['ตัดแปะ','scrap'],['แมว','cats'],['หมา','dogs'],['สัตว์อื่นๆ','critters'],['ราศี','zodiac'],['A–Z','letters'],['เทปกาว','tape'],['ดวงดาว','space'],['โน้ต','notes'],['คำฮิต','words'],['มีม','meme'],['Y2K','y2k'],['โคเก็ตต์','coquette'],['เรโทร','retro'],['น่ารัก','cute'],['ดูเดิล','doodle']];
 // short trending slang (single words/phrases — not lyrics or quotes, so no copyright issue)
 const WORDS = [
   ['หมดใจยังไงก็ตี๋','thhand'],['ชีเสิร์ฟ','thscript'],['ทำถึง','thhand'],['ทำถึงมาก','thscript'],['ตัวตึง','thhand'],['ตัวแม่','thscript'],
@@ -1881,6 +1881,65 @@ function budgie(c,body,face){ for(const pass of [0,1]){ PP(c,pass,()=>{ c.beginP
 ART_SETS.cats={}; CATS.forEach(([k,o])=>{ ART_SETS.cats[k+'Face']=c=>{ for(const pass of [0,1]){ c.save(); c.translate(0,.06); catHead(c,pass,o); c.restore(); } }; ART_SETS.cats[k+'Body']=c=>{ for(const pass of [0,1]) catBody(c,pass,o); }; });
 ART_SETS.dogs={}; DOGS.forEach(([k,o])=>{ ART_SETS.dogs[k+'Face']=c=>{ for(const pass of [0,1]){ c.save(); c.translate(0,.06); dogHead(c,pass,o); c.restore(); } }; ART_SETS.dogs[k+'Body']=c=>{ for(const pass of [0,1]) dogBody(c,pass,o); }; });
 ART_SETS.critters=OTHER;
+/* ---- zodiac (ราศี) + ascendant (ลัคนา): glyphs drawn as strokes, never font/emoji glyphs ---- */
+const ZG={
+  aries:c=>{ c.moveTo(0,.3); c.lineTo(0,-.04); c.bezierCurveTo(-.03,-.36,-.36,-.38,-.3,-.1); c.moveTo(0,-.04); c.bezierCurveTo(.03,-.36,.36,-.38,.3,-.1); },
+  taurus:c=>{ c.moveTo(.17,.12); c.arc(0,.12,.17,0,Math.PI*2); c.moveTo(-.3,-.3); c.quadraticCurveTo(-.26,-.04,0,-.05); c.quadraticCurveTo(.26,-.04,.3,-.3); },
+  gemini:c=>{ c.moveTo(-.1,-.24); c.lineTo(-.1,.24); c.moveTo(.1,-.24); c.lineTo(.1,.24); c.moveTo(-.27,-.31); c.quadraticCurveTo(0,-.19,.27,-.31); c.moveTo(-.27,.31); c.quadraticCurveTo(0,.19,.27,.31); },
+  cancer:c=>{ c.moveTo(-.06,-.1); c.arc(-.14,-.1,.08,0,Math.PI*2); c.moveTo(-.14,-.18); c.quadraticCurveTo(.1,-.3,.3,-.12); c.moveTo(.22,.1); c.arc(.14,.1,.08,0,Math.PI*2); c.moveTo(.14,.18); c.quadraticCurveTo(-.1,.3,-.3,.12); },
+  leo:c=>{ c.moveTo(-.06,.1); c.arc(-.16,.1,.1,0,Math.PI*2); c.moveTo(-.08,.04); c.bezierCurveTo(-.14,-.38,.3,-.38,.18,-.04); c.bezierCurveTo(.1,.16,.16,.32,.3,.22); },
+  virgo:c=>{ c.moveTo(-.3,-.2); c.lineTo(-.3,.22); c.moveTo(-.3,-.1); c.quadraticCurveTo(-.2,-.28,-.12,-.1); c.lineTo(-.12,.22); c.moveTo(-.12,-.1); c.quadraticCurveTo(-.02,-.28,.06,-.1); c.lineTo(.06,.3);
+    c.moveTo(.06,.06); c.bezierCurveTo(.34,-.12,.34,.2,.14,.2); c.quadraticCurveTo(.06,.2,.04,.26); },
+  libra:c=>{ c.moveTo(-.3,.22); c.lineTo(.3,.22); c.moveTo(-.3,.08); c.lineTo(-.13,.08); c.bezierCurveTo(-.22,-.26,.22,-.26,.13,.08); c.lineTo(.3,.08); },
+  scorpio:c=>{ c.moveTo(-.3,-.2); c.lineTo(-.3,.22); c.moveTo(-.3,-.1); c.quadraticCurveTo(-.2,-.28,-.12,-.1); c.lineTo(-.12,.22); c.moveTo(-.12,-.1); c.quadraticCurveTo(-.02,-.28,.06,-.1); c.lineTo(.06,.16); c.quadraticCurveTo(.08,.26,.26,.24);
+    c.moveTo(.18,.16); c.lineTo(.28,.24); c.lineTo(.19,.32); },
+  sagittarius:c=>{ c.moveTo(-.26,.26); c.lineTo(.26,-.26); c.moveTo(.04,-.26); c.lineTo(.26,-.26); c.lineTo(.26,-.04); c.moveTo(-.18,-.02); c.lineTo(.02,.18); },
+  capricorn:c=>{ c.moveTo(-.32,-.24); c.lineTo(-.18,.12); c.lineTo(-.06,-.2); c.lineTo(.04,.14); c.bezierCurveTo(.1,.3,.34,.24,.28,.08); c.bezierCurveTo(.22,-.06,.04,.02,.06,.16); c.quadraticCurveTo(.04,.3,-.08,.32); },
+  aquarius:c=>{ for(const y of [-.08,.1]){ c.moveTo(-.3,y+.05); for(let i=1;i<=4;i++) c.lineTo(-.3+i*.15,y+(i%2?-.06:.05)); } },
+  pisces:c=>{ c.moveTo(-.24,-.3); c.quadraticCurveTo(-.04,0,-.24,.3); c.moveTo(.24,-.3); c.quadraticCurveTo(.04,0,.24,.3); c.moveTo(-.2,0); c.lineTo(.2,0); },
+};
+const ZODIAC=[ // key, Thai name, element colours [badge, glyph]
+  ['aries','เมษ','fire'],['taurus','พฤษภ','earth'],['gemini','เมถุน','air'],['cancer','กรกฎ','water'],['leo','สิงห์','fire'],['virgo','กันย์','earth'],
+  ['libra','ตุลย์','air'],['scorpio','พิจิก','water'],['sagittarius','ธนู','fire'],['capricorn','มังกร','earth'],['aquarius','กุมภ์','air'],['pisces','มีน','water']];
+const ZEL={fire:['#ffd0c8','#d9485f'],earth:['#d8ecc8','#4f7f3e'],air:['#fff0b8','#b88a1c'],water:['#cfe3ff','#3f69b0']};
+function zGlyph(c,k,col,w){ c.beginPath(); ZG[k](c); c.lineCap=c.lineJoin='round'; c.strokeStyle=col; c.lineWidth=w; c.stroke(); }
+function goldGrad(c){ const g=c.createLinearGradient(-.35,-.35,.35,.35); g.addColorStop(0,'#fff1a8'); g.addColorStop(.5,'#e3b445'); g.addColorStop(1,'#b8862a'); return g; }
+ART_SETS.zodiac={};
+ZODIAC.forEach(([k,th,el])=>{ const [bg,ink]=ZEL[el];
+  ART_SETS.zodiac['z_'+k]=c=>{ sInk(c,()=>circ(c,0,0,.44),bg); c.save(); c.translate(0,-.06); c.scale(.72,.72); zGlyph(c,k,ink,.075); c.restore();
+    utext(c,th,0,.29,.12,'700 {s}px Anuphan, sans-serif',ink); c.fillStyle='#fff'; sparkleP(c,.27,-.28,.05); c.fill(); };
+  ART_SETS.zodiac['zg_'+k]=c=>{ zGlyph(c,k,'#fff',.2); zGlyph(c,k,SL,.12); zGlyph(c,k,goldGrad(c),.08); }; });
+Object.assign(ART_SETS.zodiac,{
+  lagna:c=>{ sInk(c,()=>roundRect(c,-.44,-.18,.88,.36,.18),'#2c2547'); utext(c,'ลัคนา',-.05,.0,.17,'700 {s}px Anuphan, sans-serif','#f6d77a');
+    c.fillStyle='#f6d77a'; sparkleP(c,.31,-.03,.07); c.fill(); sparkleP(c,-.33,.05,.04); c.fill(); },
+  lagnaRise:c=>{ sInk(c,()=>circ(c,0,0,.42),'#2c2547'); c.save(); c.beginPath(); c.arc(0,.12,.2,Math.PI,0); c.closePath(); c.fillStyle='#f6c86a'; c.fill(); c.restore();
+    c.strokeStyle='#f6d77a'; c.lineWidth=.03; c.lineCap='round'; c.beginPath(); c.moveTo(-.3,.12); c.lineTo(.3,.12); for(const a of [-2.6,-2.1,-1.57,-1.05,-.55]){ c.moveTo(Math.cos(a)*.25,.12+Math.sin(a)*.25); c.lineTo(Math.cos(a)*.32,.12+Math.sin(a)*.32); } c.stroke();
+    utext(c,'RISING',0,.27,.08,'800 {s}px Anuphan, sans-serif','#f6d77a'); },
+  duangPang:c=>{ sInk(c,()=>{ star5(c,0,0,.46,.62); },'#fff3b0'); utext(c,'ดวงปัง',0,.02,.15,'800 {s}px Anuphan, sans-serif','#b0405e'); },
+  sunSign:c=>{ sInk(c,()=>circ(c,0,0,.3),'#ffd36a'); c.strokeStyle=SL; c.lineWidth=.03; c.lineCap='round'; c.beginPath(); for(let i=0;i<8;i++){ const a=i/8*Math.PI*2; c.moveTo(Math.cos(a)*.36,Math.sin(a)*.36); c.lineTo(Math.cos(a)*.46,Math.sin(a)*.46); } c.stroke();
+    c.fillStyle=SL; dot(c,0,0,.05); c.strokeStyle=SL; c.lineWidth=.025; circ(c,0,0,.16); c.stroke(); },
+  moonSign:c=>{ sInk(c,()=>crescentPath(c,0,0,.42,.2,-.14,.36),'#e9e4ff'); c.fillStyle='#c9b8ff'; sparkleP(c,.28,.24,.07); c.fill(); sparkleP(c,.34,-.26,.045); c.fill(); },
+});
+/* ---- A–Z letters: each letter gets its own cute style (bubble, badge, paper cut-out, heart, cloud, tile, gingham) ---- */
+function letterInk(c,ch,font,sz,fill,y){ c.save(); c.scale(.01,.01); c.font=font.replace('{s}',Math.round(sz*100)); c.textAlign='center'; c.textBaseline='middle'; c.lineJoin='round';
+  const Y=(y||0)*100; c.strokeStyle='#fff'; c.lineWidth=sz*100*.32; c.strokeText(ch,0,Y); c.strokeStyle=SL; c.lineWidth=sz*100*.12; c.strokeText(ch,0,Y); c.fillStyle=fill; c.fillText(ch,0,Y); c.restore(); }
+const LT_COLS=['#ffb3c8','#b9d4f5','#c9b8ff','#ffe28a','#a8e0c4','#ffc9a0','#f6a7c1','#9fd8f0'];
+const LT_STYLES=[
+  (c,ch,col)=>{ letterInk(c,ch,'800 {s}px Anuphan, sans-serif',.78,col,.03); c.fillStyle='#fff'; sparkleP(c,.32,-.3,.07); c.fill(); },                                  // bubble
+  (c,ch,col)=>{ sInk(c,()=>circ(c,0,0,.42),col); utext(c,ch,0,.03,.56,'700 {s}px "Instrument Serif", serif',SL); },                                                   // round badge
+  (c,ch,col)=>{ const R=rng(ch.charCodeAt(0)); c.save(); c.rotate((R()-.5)*.3); c.save(); paperShadow(c); tornRect(c,-.34,-.38,.68,.76,ch.charCodeAt(0),.02); c.fillStyle=R()<.5?'#fffaf0':col; c.fill(); c.restore();
+      utext(c,ch,0,.04,.62,R()<.5?'700 {s}px "Special Elite", monospace':'900 {s}px Georgia, serif',R()<.5?SL:'#c0405e'); c.restore(); },                           // paper cut-out
+  (c,ch,col)=>{ sInk(c,()=>heartP(c,0,-.04,.46),col); utext(c,ch,0,.0,.42,'800 {s}px Anuphan, sans-serif','#fff'); },                                                  // heart
+  (c,ch,col)=>{ sInk(c,()=>{ c.beginPath(); c.moveTo(-.34,.2); c.bezierCurveTo(-.5,.2,-.5,-.06,-.3,-.06); c.bezierCurveTo(-.28,-.3,.04,-.34,.1,-.14); c.bezierCurveTo(.2,-.28,.46,-.2,.4,.0); c.bezierCurveTo(.52,.04,.5,.22,.34,.22); c.closePath(); },'#ffffff');
+      utext(c,ch,0,.05,.46,'400 {s}px Pacifico, cursive',col==='#ffe28a'?'#d9a21c':shade(col,-.45)); },                                                             // cloud
+  (c,ch,col)=>{ c.save(); c.rotate(-.06); sInk(c,()=>roundRect(c,-.36,-.36,.72,.72,.1),'#f3e3c6'); c.strokeStyle='rgba(120,90,50,.25)'; c.lineWidth=.01; for(let y=-.3;y<.32;y+=.06){ c.beginPath(); c.moveTo(-.33,y); c.quadraticCurveTo(0,y+.02,.33,y); c.stroke(); }
+      utext(c,ch,0,.02,.52,'800 {s}px Anuphan, sans-serif','#6a4a2a'); c.restore(); },                                                                          // wooden block
+  (c,ch,col)=>{ sInk(c,()=>roundRect(c,-.38,-.38,.76,.76,.16),'#ffffff'); c.save(); roundRect(c,-.38,-.38,.76,.76,.16); c.clip(); c.globalAlpha=.45; c.fillStyle=col; for(let x=-.38;x<.4;x+=.12) c.fillRect(x,-.38,.06,.76); for(let y=-.38;y<.4;y+=.12) c.fillRect(-.38,y,.76,.06); c.restore();
+      letterInk(c,ch,'800 {s}px Anuphan, sans-serif',.5,'#fff',.03); },                                                                                         // gingham
+  (c,ch,col)=>{ letterInk(c,ch,'400 {s}px Pacifico, cursive',.62,col,-.02); },                         // script
+];
+ART_SETS.letters={};
+'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((ch,i)=>{ const st=LT_STYLES[(i*5+3)%LT_STYLES.length], col=LT_COLS[(i*3+Math.floor(i/8)*5+1)%LT_COLS.length]; ART_SETS.letters['L_'+ch]=c=>st(c,ch,col); });
 const ART = Object.assign({}, ...Object.values(ART_SETS));
 const artIcons={};
 function artIcon(k){ if(artIcons[k]) return artIcons[k]; const cv=document.createElement('canvas'); cv.width=cv.height=112; const c=cv.getContext('2d');
@@ -2696,6 +2755,7 @@ requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
 visitCounter(); loadStats();
+try{ ['400 20px Pacifico','700 20px "Special Elite"','400 20px "Instrument Serif"','800 20px Anuphan','400 20px "Nanum Pen Script"'].forEach(f=>document.fonts.load(f)); }catch(e){}
 // secret door: tap the little "by ssp" under the logo 5 times quickly
 { let taps=0, tm=0; $('.brand .by').addEventListener('click',()=>{ clearTimeout(tm); tm=setTimeout(()=>taps=0,1500); if(++taps>=5){ taps=0; ownerLogin(); } }); }
 addScrollNav($('#stickerCats')); addScrollNav($('#frameCats')); addScrollNav($('#tabs')); $('#tabs').parentElement.classList.add('tabsnav');
