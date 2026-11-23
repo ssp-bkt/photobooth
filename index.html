@@ -229,6 +229,7 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .about{margin:32px auto 0;max-width:720px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.7}
 .about h1{font-size:16px;font-weight:600;color:var(--ink2);margin:0 0 6px}
 .about p{margin:0 0 6px}
+.stats{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;margin:16px 0 0}.stats span{background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12.5px}.stats b{color:var(--ink);font-weight:600}
 .support{display:flex;align-items:center;gap:16px;width:max-content;max-width:100%;box-sizing:border-box;margin:18px auto 0;padding:12px 18px 12px 12px;border-radius:20px;background:var(--surface);border:1px solid rgba(0,0,0,.06);text-align:left}
 .support img{width:116px;height:116px;flex:none;border-radius:10px}
 .support b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:2px}.support span{font-size:12.5px;line-height:1.6}
@@ -417,6 +418,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
     <p>chaechae (แชะแชะ) คือตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ ถ่ายรูปแบบโฟโต้บูธเกาหลี 4 ช่อง แถบ 2–3 ช่อง หรือตาราง 2×2 ได้ทันทีผ่านมือถือ iPad หรือคอมพิวเตอร์ เลือกกรอบน่ารัก ใส่สติ๊กเกอร์ ข้อความตัวเขียน ปรับสีรูป แล้วดาวน์โหลดหรือแชร์ได้เลย</p>
     <p>รูปทั้งหมดประมวลผลในเครื่องของคุณ ไม่มีการอัปโหลดรูปขึ้นเซิร์ฟเวอร์</p>
     <button class="btn" id="openMaker" style="margin-top:10px">✦ สำหรับร้านค้า / อีเวนต์ — สร้างลิงก์และ QR เฉพาะงาน</button>
+    <div class="stats" id="stats" hidden><span>ถ่ายไปแล้ว <b id="stat-shots">0</b> ครั้ง</span><span>เซฟรูป <b id="stat-saves">0</b> ครั้ง</span><span>บันทึก PDF <b id="stat-pdfs">0</b> ครั้ง</span></div>
     <div class="support" id="support">
       <img id="supportQR" src="donate-qr.png" width="353" height="353" alt="QR พร้อมเพย์ สนับสนุนผู้สร้าง" loading="lazy">
       <div><b>สนับสนุนผู้สร้าง ✦</b><span>ชอบ chaechae ไหม ใช้ฟรีได้เสมอ<br>ถ้าอยากเลี้ยงขนมคนทำ สแกน QR พร้อมเพย์นี้<br>ด้วยแอปธนาคารได้เลย</span></div>
@@ -714,7 +716,7 @@ async function shoot(){
     audio(); const n=shotCount(); if(state.shots.length>=n){ state.shots=[]; state.crops=[]; }
     const fl=$('#flash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); shutterSound();
     state.shots.push(grab(video, video.videoWidth, video.videoHeight, state.mirror)); renderLive();
-    if(state.shots.length>=n){ state.busy=true; await sleep(600); state.busy=false; openEditor(); }
+    if(state.shots.length>=n){ tally('shots'); state.busy=true; await sleep(600); state.busy=false; openEditor(); }
     return;
   }
   audio(); state.busy=true; state.cancel=false; setShootUI(true); state.shots=[]; state.crops=[]; renderLive();
@@ -731,7 +733,7 @@ async function shoot(){
   }
   pill.hidden=true; cnt.textContent=''; state.busy=false; setShootUI(false);
   if(state.cancel){ state.cancel=false; state.shots=[]; renderLive(); toast('ยกเลิกแล้ว'); return; }
-  await sleep(500); openEditor();
+  tally('shots'); await sleep(500); openEditor();
 }
 function flipCam(){
   if(state.busy) return;
@@ -1981,9 +1983,9 @@ function sprinkle(){
 function exportBlob(){ return new Promise(res=>{ const s=ed.sel; ed.sel=null; render(); stage.toBlob(b=>{ ed.sel=s; render(); res(b); },'image/png'); }); }
 function fileName(){ const d=new Date(), p=n=>String(n).padStart(2,'0'); return `chaechae-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.png`; }
 async function download(){ const b=await exportBlob(), url=URL.createObjectURL(b), a=document.createElement('a');
-  a.href=url; a.download=fileName(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000); toast('เซฟรูปแล้ว'); }
+  a.href=url; a.download=fileName(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000); toast('เซฟรูปแล้ว'); tally('saves'); }
 async function share(){ const b=await exportBlob(), f=new File([b], fileName(), {type:'image/png'});
-  if(navigator.canShare && navigator.canShare({files:[f]})){ try{ await navigator.share({files:[f], title:'chaechae'}); }catch(e){} }
+  if(navigator.canShare && navigator.canShare({files:[f]})){ try{ await navigator.share({files:[f], title:'chaechae'}); tally('saves'); }catch(e){} }
   else { toast('เบราว์เซอร์นี้แชร์ตรงไม่ได้ — ดาวน์โหลดให้แทนนะ'); await download(); } }
 
 /* ================= EVENT MODE =================
@@ -2083,6 +2085,12 @@ async function downloadQRCard(){
 }
 
 /* ---- visit counter (free Abacus counter; counts once per browser session, only on the live site) ---- */
+const COUNT_URL='https://abacus.jasoncameron.dev', COUNT_NS='chaechae-photobooth', countLive=()=>/github\.io$/.test(location.hostname) && !isOwner();
+const STAT_KEYS=['shots','saves','pdfs'];
+function tally(key){ if(!countLive()) return; // one event = +1, fire and forget
+  fetch(`${COUNT_URL}/hit/${COUNT_NS}/${key}`).then(r=>r.ok&&r.json()).then(j=>{ if(j && typeof j.value==='number') showStat(key,j.value); }).catch(()=>{}); }
+function showStat(key,v){ const el=$(`#stat-${key}`); if(!el) return; el.textContent=v.toLocaleString('th-TH'); $('#stats').hidden=false; }
+async function loadStats(){ await Promise.all(STAT_KEYS.map(async k=>{ try{ const r=await fetch(`${COUNT_URL}/get/${COUNT_NS}/${k}`); const j=r.ok?await r.json():{value:0}; showStat(k, typeof j.value==='number'?j.value:0); }catch(e){} })); }
 async function visitCounter(){
   const live=/github\.io$/.test(location.hostname), url='https://abacus.jasoncameron.dev';
   let counted=false; try{ counted=sessionStorage.getItem('cc-counted')==='1'; }catch(e){}
@@ -2171,7 +2179,7 @@ async function savePdf(){
     while(left>0){ const n=Math.min(left,g.per); left-=n;
       const cv=document.createElement('canvas'); cv.width=Math.round(mm2px(A4.w)); cv.height=Math.round(mm2px(A4.h)); drawPrintPage(cv.getContext('2d'),1,n);
       const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92)); pages.push({jpg:new Uint8Array(await b.arrayBuffer()), w:cv.width, h:cv.height}); }
-    saveBlob(pdfFromJpegs(pages), fileName().replace('.png',`-print-${sz.id}.pdf`));
+    saveBlob(pdfFromJpegs(pages), fileName().replace('.png',`-print-${sz.id}.pdf`)); tally('pdfs');
     btn.textContent='บันทึกแล้ว ✓'; setTimeout(()=>btn.textContent='บันทึก PDF',1800);
   }catch(e){ console.error(e); btn.textContent='บันทึกไม่สำเร็จ ลองใหม่'; setTimeout(()=>btn.textContent='บันทึก PDF',2200); }
 }
@@ -2201,7 +2209,7 @@ function liveLoop(t){
 requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
-visitCounter();
+visitCounter(); loadStats();
 applyEvent();
 buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
 $('#openMaker').onclick=openMaker;
