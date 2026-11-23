@@ -139,6 +139,16 @@ dialog#zoom::backdrop{background:rgba(16,14,20,.92)}
 .zoomclose{position:fixed;top:12px;right:12px;z-index:2}
 .zoomhint{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
 .mkprev canvas{cursor:zoom-in}
+.zoombtn.adjbtn{right:auto;left:12px}
+.zoombtn.on{background:var(--on);color:var(--on-ink);border-color:var(--on)}
+.btn.adjopen{gap:8px;font-weight:600}
+.adjpop{position:absolute;top:58px;left:12px;z-index:3;width:290px;max-height:calc(100% - 70px);display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 44px rgba(0,0,0,.18)}
+.adjpop[hidden]{display:none}
+.adjhead{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 6px 16px;font-size:14px}
+.adjhead .btn{padding:6px 10px}
+.adjbody{overflow:auto;padding:0 16px 14px;overscroll-behavior:contain}
+.adjbody .sec{margin-bottom:6px}
+@media (max-width:920px){.adjpop{position:fixed;left:0;right:0;top:auto;bottom:0;width:auto;max-height:55vh;border-radius:20px 20px 0 0;padding-bottom:env(safe-area-inset-bottom)}}
 .btn.live{background:linear-gradient(90deg,#ffd6e6,#e3dcff,#d6f0ff);border-color:transparent;color:#2a2233;font-weight:600}
 .btn.live:disabled{opacity:.75}
 dialog#vidDlg{border:0;padding:0;border-radius:24px;background:var(--surface);color:var(--ink);width:min(420px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);box-shadow:0 30px 80px rgba(0,0,0,.35)}
@@ -195,6 +205,15 @@ dialog#vidDlg::backdrop{background:rgba(16,14,20,.6);-webkit-backdrop-filter:blu
 .tabs button{flex:1 0 auto;border:0;background:transparent;border-radius:10px;padding:8px 9px;font-size:13px;color:var(--muted);white-space:nowrap}
 .tabs button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .hscroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-bottom:12px}
+.hscroll::-webkit-scrollbar{display:none}
+.navwrap{position:relative}
+.navwrap.can-r>:not(button){-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent)}
+.navwrap.can-l>:not(button){-webkit-mask-image:linear-gradient(90deg,transparent,#000 44px);mask-image:linear-gradient(90deg,transparent,#000 44px)}
+.navwrap.can-l.can-r>:not(button){-webkit-mask-image:linear-gradient(90deg,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,transparent,#000 44px,#000 calc(100% - 44px),transparent)}
+.navwrap>.bfnav{top:calc(50% - var(--nb,6px) - 15px);width:30px;height:30px}
+.navwrap.tabsnav{--nb:9px}
+.navwrap>.bfnav.prev{left:-4px}.navwrap>.bfnav.next{right:-4px}
+.navwrap.can-l>.bfnav.prev,.navwrap.can-r>.bfnav.next{display:flex}
 /* side panel: tabs on top, content scrolls inside, main button pinned at the bottom — no page scrolling on desktop */
 .side{display:flex;flex-direction:column;position:sticky;top:16px;max-height:calc(100vh - 92px);padding-bottom:16px}
 .side .tabs{flex:none}
@@ -232,7 +251,9 @@ dialog#vidDlg::backdrop{background:rgba(16,14,20,.6);-webkit-backdrop-filter:blu
 .bft{flex:none;width:68px;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--ink2);line-height:1.2;text-align:center;scroll-snap-align:start}
 .bft canvas{width:68px;height:51px;border-radius:9px;border:2px solid transparent;display:block;background:var(--chip)}
 .bft.on canvas{border-color:var(--ink)}.bft.on{color:var(--ink);font-weight:600}
-.ftiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ftiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.ftiles .ftile{font-size:10.5px}
+@media (max-width:600px){.ftiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}}
 .fgh{grid-column:1/-1;font-size:12px;font-weight:600;color:var(--muted);margin-top:6px}
 .ftile{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--ink2);line-height:1.25;text-align:center}
 .ftile canvas{width:100%;height:auto;aspect-ratio:4/3;border-radius:10px;border:2px solid transparent;display:block;background:var(--chip)}
@@ -382,7 +403,16 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 
   <!-- ===== EDITOR ===== -->
   <section id="editor" class="grid" hidden>
-    <div class="stagewrap"><canvas id="stage"></canvas><button class="zoombtn" id="zoomStage" aria-label="ขยายดูรูป"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20M10.5 7.5v6M7.5 10.5h6"/></svg>ขยายดู</button></div>
+    <div class="stagewrap"><canvas id="stage"></canvas><button class="zoombtn adjbtn" id="adjOpen" aria-label="ปรับแสงและสีเอง"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>ปรับเอง</button>
+      <div class="adjpop" id="adjPop" hidden>
+        <div class="adjhead"><b>ปรับแสงและสีเอง</b><button class="btn" id="adjClose" aria-label="ปิด">✕</button></div>
+        <div class="adjbody">
+          <div class="sec" id="sliders"></div>
+          <label class="switch">วันที่สีส้มแบบกล้องดิจิแคม<input type="checkbox" id="stamp"></label>
+          <label class="switch">เลนส์ตาปลา<input type="checkbox" id="fisheye"></label>
+          <button class="btn" id="resetAdj" style="width:100%;margin-top:12px">รีเซ็ตสี</button>
+        </div>
+      </div><button class="zoombtn" id="zoomStage" aria-label="ขยายดูรูป"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20M10.5 7.5v6M7.5 10.5h6"/></svg>ขยายดู</button></div>
 
     <div class="card side">
       <div class="tabs" id="tabs">
@@ -399,10 +429,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
       <div class="panel" data-panel="color">
         <div class="sec"><div class="label">ฟิลเตอร์ <span>ตัวอย่างจากรูปของคุณ</span></div><div class="ftiles" id="edFilters"></div>
           <div class="sl" style="margin-top:12px"><label><span>ความเข้มฟิลเตอร์</span><b id="sv-amount"></b></label><input type="range" id="sl-amount" min="0" max="100"></div></div>
-        <div class="sec" id="sliders"></div>
-        <label class="switch">วันที่สีส้มแบบกล้องดิจิแคม<input type="checkbox" id="stamp"></label>
-        <label class="switch">เลนส์ตาปลา<input type="checkbox" id="fisheye"></label>
-        <button class="btn" id="resetAdj" style="width:100%;margin-top:12px">รีเซ็ตสี</button>
+        <button class="btn adjopen" id="adjOpen2" style="width:100%;margin-top:4px"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>ปรับแสงและสีเอง</button>
       </div>
 
       <div class="panel" data-panel="crop" hidden>
@@ -779,6 +806,14 @@ function phraseWrap(el){ [...el.childNodes].forEach(n=>{ if(n.nodeType===3){ if(
   else if(n.nodeType===1 && !['BUTTON','INPUT','B','I','SPAN','CANVAS','IMG','SVG'].includes(n.tagName)) phraseWrap(n); }); }
 function phraseSet(el,text){ el.textContent=text; phraseWrap(el); }
 /* booth filter strip: arrows + edge fade show there is more to scroll */
+function addScrollNav(el){ const w=document.createElement('div'); w.className='navwrap'; el.before(w);
+  const pv=document.createElement('button'), nx=document.createElement('button'); pv.className='bfnav prev'; nx.className='bfnav next'; pv.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>'; nx.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+  pv.setAttribute('aria-label','เลื่อนซ้าย'); nx.setAttribute('aria-label','ดูเพิ่ม'); w.append(pv,el,nx);
+  const upd=()=>{ const max=el.scrollWidth-el.clientWidth; w.classList.toggle('can-l',el.scrollLeft>4); w.classList.toggle('can-r',el.scrollLeft<max-4); };
+  pv.onclick=()=>el.scrollBy({left:-el.clientWidth*.7,behavior:'smooth'}); nx.onclick=()=>el.scrollBy({left:el.clientWidth*.7,behavior:'smooth'});
+  el.addEventListener('scroll',upd,{passive:true}); addEventListener('resize',upd);
+  el.addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX) && el.scrollWidth>el.clientWidth){ el.scrollLeft+=e.deltaY; e.preventDefault(); } },{passive:false});
+  try{ new ResizeObserver(upd).observe(el); }catch(e){} setTimeout(upd,200); return upd; }
 function bfNav(){ const el=$('#boothFilters'), row=$('#bfRow'); if(!el||!row) return; const max=el.scrollWidth-el.clientWidth;
   row.classList.toggle('can-l', el.scrollLeft>4); row.classList.toggle('can-r', el.scrollLeft<max-4); }
 function bfScroll(dir){ const el=$('#boothFilters'); el.scrollBy({left:dir*el.clientWidth*.8, behavior:'smooth'}); }
@@ -1823,7 +1858,7 @@ function drawBase(c,o){
 }
 
 async function openEditor(tab){
-  camFullSet(false); stopCam(); $('#liveBtn').hidden=!(hasClips() && pickVideoType());
+  $('#adjPop').hidden=true; $('#adjOpen').classList.remove('on'); camFullSet(false); stopCam(); $('#liveBtn').hidden=!(hasClips() && pickVideoType());
   ed.objects=[]; ed.strokes=[]; ed.sel=null; ed.history=[]; ed.cropSel=0; ed.cellShapes=[]; ed.shapeTarget='all';
   $(`#tabs [data-tab="${tab||'color'}"]`).click();
   sizeStage();
@@ -2441,6 +2476,7 @@ requestAnimationFrame(liveLoop);
 visitCounter(); loadStats();
 // secret door: tap the little "by ssp" under the logo 5 times quickly
 { let taps=0, tm=0; $('.brand .by').addEventListener('click',()=>{ clearTimeout(tm); tm=setTimeout(()=>taps=0,1500); if(++taps>=5){ taps=0; ownerLogin(); } }); }
+addScrollNav($('#stickerCats')); addScrollNav($('#frameCats')); addScrollNav($('#tabs')); $('#tabs').parentElement.classList.add('tabsnav');
 $('#bfPrev').onclick=e=>{ e.stopPropagation(); bfScroll(-1); }; $('#bfNext').onclick=e=>{ e.stopPropagation(); bfScroll(1); };
 $('#boothFilters').addEventListener('scroll',bfNav,{passive:true}); addEventListener('resize',bfNav);
 $('#boothFilters').addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){ const el=e.currentTarget; if(el.scrollWidth>el.clientWidth){ el.scrollLeft+=e.deltaY; e.preventDefault(); } } },{passive:false});
@@ -2450,6 +2486,9 @@ applyEvent();
 buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
 $('#openMaker').onclick=openMaker;
 $('#printBtn').onclick=openPrinter;
+function adjToggle(open){ const pop=$('#adjPop'); open=open??pop.hidden; pop.hidden=!open; $('#adjOpen').classList.toggle('on',open); }
+$('#adjOpen').onclick=()=>adjToggle(); $('#adjOpen2').onclick=()=>adjToggle(true); $('#adjClose').onclick=()=>adjToggle(false);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('#adjPop').hidden) adjToggle(false); });
 $('#zoomStage').onclick=async()=>openZoom(await exportBlob());
 if(new URLSearchParams(location.search).has('maker')) openMaker();
 if(new URLSearchParams(location.search).has('owner')){ history.replaceState(null,'',location.pathname); setTimeout(ownerLogin,300); }
