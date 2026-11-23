@@ -1272,7 +1272,35 @@ CAREERS.forEach(([career,cute,cool],n)=>[['น่ารัก',cute,true],['เ�
     fg:(c,W,H,t,o)=>{ careerEdge(c,W,H,t||0,seed+9,d.icons,d.st);
       if(o.fx!=null){ c.save(); c.fillStyle=d.ink; c.globalAlpha=.9; c.textAlign='left'; c.textBaseline='middle';
         c.font=isCute?'700 28px "Dancing Script", Charm, cursive':'400 16px "Special Elite", monospace'; c.fillText(d.label,(o.left||0)+PAD,H-FOOT/2-2); c.restore(); } } }); }));
-const FRAME_CATS = ['ทั้งหมด','สายอาชีพ','วินเทจอาร์ต','ผ้าลินิน','ดวงดาว','ตัดแปะ','มินิมอล','น่ารัก','สีแสบ','ออร่า','เรโทร'];
+/* ---- dreamy pastel frames: soft blurred colour clouds, light haze, bokeh and a whisper of grain ---- */
+function dreamyBg(c,W,H,base,cols,seed,o){ o=o||{}; fill(c,W,H,base); const R=rng(seed), M=Math.max(W,H);
+  // big soft colour clouds, evenly spread down the frame so long strips stay dreamy too
+  const n=Math.max(4,Math.round(H/W*3)+2); c.save();
+  for(let i=0;i<n*cols.length;i++){ const col=cols[i%cols.length], x=(R()*1.2-.1)*W, y=((i+R())/(n*cols.length))*H*1.1-H*.05, r=Math.min(W,H)*(.45+R()*.5)+M*.05;
+    const g=c.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,col); g.addColorStop(.55,col+'99'); g.addColorStop(1,col+'00'); c.globalAlpha=.9; c.fillStyle=g; c.fillRect(0,0,W,H); }
+  c.restore();
+  // milky haze from the top
+  const hz=c.createLinearGradient(0,0,0,H); hz.addColorStop(0,'rgba(255,255,255,.35)'); hz.addColorStop(.5,'rgba(255,255,255,0)'); hz.addColorStop(1,'rgba(255,255,255,.22)'); c.fillStyle=hz; c.fillRect(0,0,W,H);
+  // bokeh
+  c.save(); for(let i=0;i<W*H/(o.bokeh||26000);i++){ const x=R()*W, y=R()*H, r=10+R()*R()*46; if(decorHit(x,y,r)) continue;
+    const g=c.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,`rgba(255,255,255,${.35+R()*.35})`); g.addColorStop(.7,'rgba(255,255,255,.12)'); g.addColorStop(1,'rgba(255,255,255,0)'); c.fillStyle=g; c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.fill(); }
+  c.restore();
+  if(o.sparkle){ c.save(); c.fillStyle='rgba(255,255,255,.95)'; c.shadowColor='rgba(255,255,255,.9)'; c.shadowBlur=8; for(let i=0;i<W*H/60000;i++){ const x=R()*W, y=R()*H, r=4+R()*7; if(decorHit(x,y,r*2)) continue; sparkleP(c,x,y,r); c.fill(); } c.restore(); }
+  c.save(); c.globalAlpha=.05; c.globalCompositeOperation='overlay'; c.fillStyle=c.createPattern(getGrain(),'repeat'); c.fillRect(0,0,W,H); c.restore(); }
+[
+  ['dreamCotton','ฟุ้งสายไหม','#fdeef4',['#ffc6dc','#c9e2ff','#e4d4ff'],'#a8577a',{sparkle:true}],
+  ['dreamPeach','ฟุ้งพีช','#fff3ea',['#ffd2b8','#ffc4d4','#fff0b8'],'#b0653f',{}],
+  ['dreamLavender','ฟุ้งลาเวนเดอร์','#f3eefc',['#dccbff','#c8d4ff','#ffd8ec'],'#6b56a3',{sparkle:true}],
+  ['dreamMint','ฟุ้งมิ้นท์','#effaf5',['#c8f0de','#c6e8f5','#f6f3c0'],'#3f8a72',{}],
+  ['dreamSky','ฟุ้งฟ้าชมพู','#eef5ff',['#c5dcff','#ffd6e8','#ffffff'],'#4f6fa8',{sparkle:true}],
+  ['dreamSorbet','ฟุ้งซอร์เบท์','#fff1ef',['#ffc2b5','#e2cdfa','#ffe0b8'],'#b25a63',{}],
+  ['dreamOpal','ฟุ้งโอปอล','#f7f4fb',['#ffd8e8','#d4f4e8','#d6e4ff','#fff3c4'],'#7a6a96',{sparkle:true}],
+  ['dreamMilk','ฟุ้งนมชมพู','#fff3f6',['#ffcadb','#fff0e0','#ffd9e6'],'#b0507a',{}],
+  ['dreamDusk','ฟุ้งฟ้าสนธยา','#ece6fb',['#cdb8ff','#ffc1dc','#b8d0ff'],'#5a4a8a',{sparkle:true}],
+  ['dreamButter','ฟุ้งเนยฟ้า','#fffaee',['#fff0b5','#ffdcc2','#d7e9ff'],'#9a7a30',{}],
+].forEach(([id,name,base,cols,ink,o],k)=>FRAMES.push({id,name,cat:'ฟุ้งพาสเทล',ink,bg:(c,W,H)=>dreamyBg(c,W,H,base,cols,500+k*13,o),
+  fg:(c,W,H,t,o)=>{ c.save(); c.shadowColor='rgba(255,255,255,.95)'; c.shadowBlur=34; c.fillStyle='#fff'; for(const q of o.cells){ roundRect(c,q.x,q.y,q.w,q.h,14); c.fill(); c.fill(); } c.restore(); }}));
+const FRAME_CATS = ['ทั้งหมด','ฟุ้งพาสเทล','สายอาชีพ','วินเทจอาร์ต','ผ้าลินิน','ดวงดาว','ตัดแปะ','มินิมอล','น่ารัก','สีแสบ','ออร่า','เรโทร'];
 
 /* ================= PHOTO SHAPES ================= */
 function fillPhoto(c,img,x,y,w,h){
