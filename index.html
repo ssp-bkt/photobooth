@@ -136,6 +136,13 @@ dialog#zoom::backdrop{background:rgba(16,14,20,.92)}
 .zoomclose{position:fixed;top:12px;right:12px;z-index:2}
 .zoomhint{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
 .mkprev canvas{cursor:zoom-in}
+.btn.live{background:linear-gradient(90deg,#ffd6e6,#e3dcff,#d6f0ff);border-color:transparent;color:#2a2233;font-weight:600}
+.btn.live:disabled{opacity:.75}
+dialog#vidDlg{border:0;padding:0;border-radius:24px;background:var(--surface);color:var(--ink);width:min(420px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+dialog#vidDlg::backdrop{background:rgba(16,14,20,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.vidin{padding:16px;display:flex;flex-direction:column;gap:12px;align-items:center}
+#vidPlayer{max-width:100%;max-height:calc(100dvh - 130px);border-radius:12px;background:#000;display:block}
+.vidrow{display:flex;gap:8px;width:100%}.vidrow .btn{flex:1}
 @media (max-width:600px){.camhint{display:none}}
 
 /* live layout preview */
@@ -308,6 +315,10 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 </style>
 </head>
 <body>
+<dialog id="vidDlg" aria-label="วิดีโอวนลูป">
+  <div class="vidin"><video id="vidPlayer" muted loop playsinline autoplay></video>
+    <div class="row vidrow"><button class="btn" id="vidClose">ปิด</button><button class="btn" id="vidShare">แชร์</button><button class="btn dark" id="vidSave">เซฟวิดีโอ</button></div></div>
+</dialog>
 <dialog id="zoom" aria-label="ขยายดู">
   <button class="btn zoomclose" id="zoomClose" aria-label="ปิด">✕</button>
   <div class="zoomin"><img id="zoomImg" alt="ภาพขยาย"></div>
@@ -446,6 +457,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
         <button class="btn" id="retake">ถ่ายใหม่</button>
         <button class="btn" id="share">แชร์</button>
         <button class="btn wide" id="printBtn" style="font-weight:500">🖨 พิมพ์เก็บ — บันทึกเป็น PDF</button>
+        <button class="btn wide live" id="liveBtn" hidden>ภาพเคลื่อนไหว — ทำเป็นวิดีโอวนลูป</button>
         <button class="btn dark wide" id="download">ดาวน์โหลดรูป</button>
       </div>
     </div>
@@ -456,7 +468,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
     <p>chaechae (แชะแชะ) คือตู้ถ่ายรูปสติ๊กเกอร์บนเว็บ ถ่ายรูปแบบโฟโต้บูธเกาหลี 4 ช่อง แถบ 2–3 ช่อง หรือตาราง 2×2 ได้ทันทีผ่านมือถือ iPad หรือคอมพิวเตอร์ เลือกกรอบน่ารัก ใส่สติ๊กเกอร์ ข้อความตัวเขียน ปรับสีรูป แล้วดาวน์โหลดหรือแชร์ได้เลย</p>
     <p>รูปทั้งหมดประมวลผลในเครื่องของคุณ ไม่มีการอัปโหลดรูปขึ้นเซิร์ฟเวอร์</p>
     <button class="btn" id="openMaker" style="margin-top:10px">✦ สำหรับร้านค้า / อีเวนต์ — สร้างลิงก์และ QR เฉพาะงาน</button>
-    <div class="stats" id="stats" hidden><span>ถ่ายไปแล้ว <b id="stat-shots">0</b> ครั้ง</span><span>เซฟรูป <b id="stat-saves">0</b> ครั้ง</span><span>บันทึก PDF <b id="stat-pdfs">0</b> ครั้ง</span></div>
+    <div class="stats" id="stats" hidden><span>ถ่ายไปแล้ว <b id="stat-shots">0</b> ครั้ง</span><span>เซฟรูป <b id="stat-saves">0</b> ครั้ง</span><span>บันทึก PDF <b id="stat-pdfs">0</b> ครั้ง</span><span>วิดีโอ <b id="stat-videos">0</b> ครั้ง</span></div>
     <div class="stats evstats" id="evstats" hidden><span class="evlabel">งานอีเวนต์ (เห็นเฉพาะเจ้าของ)</span><span>สร้างแล้ว <b id="stat-ev-made">0</b> งาน</span><span>แขกเปิดลิงก์ <b id="stat-ev-visits">0</b> ครั้ง</span><span>ถ่าย <b id="stat-ev-shots">0</b> ครั้ง</span><span>เซฟรูป <b id="stat-ev-saves">0</b> ครั้ง</span><span>PDF <b id="stat-ev-pdfs">0</b> ครั้ง</span></div>
     <div class="support" id="support">
       <img id="supportQR" src="donate-qr.png" width="353" height="353" alt="QR พร้อมเพย์ สนับสนุนผู้สร้าง" loading="lazy">
@@ -631,7 +643,7 @@ const MEME_TEMPLATES = [
 ];
 
 /* ================= STATE ================= */
-const state = {layout:'strip4', filter:'normal', timer:3, mirror:true, facing:'user', shots:[], crops:[], busy:false, cancel:false};
+const state = {layout:'strip4', filter:'normal', timer:3, mirror:true, facing:'user', shots:[], clips:[], crops:[], busy:false, cancel:false};
 const ed = {
   frame:'white', shape:'round', frameCat:'ทั้งหมด', dateFmt:'num', title:'', titleFont:'script', subtitle:'', logo:null,
   objects:[], strokes:[], sel:null, tab:'color', adj:null, proc:[], cropSel:0, cellShapes:[], shapeTarget:'all',
@@ -681,7 +693,7 @@ function buildBoothUI(){
     const b=document.createElement('button'); b.className='lcard'+(k===state.layout?' on':'');
     b.innerHTML=(L.collage ? `<div class="lmini cl ${L.collage}"><i></i><i></i><i></i></div>`
       : `<div class="lmini" style="grid-template-columns:repeat(${L.cols},${cw}px)">${`<i style="height:${cw*.75}px"></i>`.repeat(L.cols*L.rows)}</div>`)+`<span>${L.name}</span>`;
-    b.onclick=()=>{ if(state.busy) return; state.layout=k; setOn(lc,b); state.shots=[]; state.crops=[]; renderLive(); };
+    b.onclick=()=>{ if(state.busy) return; state.layout=k; setOn(lc,b); state.shots=[]; state.clips=[]; state.crops=[]; renderLive(); };
     lc.appendChild(b);
   }
   seg($('#timerSeg'), TIMERS.map(t=>[t,t?`${t} วิ`:'ไม่ตั้ง']), state.timer, k=>{ state.timer=+k; renderSummary(); renderLive(); });
@@ -770,13 +782,13 @@ async function shoot(){
   if(state.busy){ state.cancel=true; return; }
   if(!stream || !video.videoWidth){ toast('ยังไม่มีกล้อง — อัปโหลดรูปแทนได้นะ'); return; }
   if(!state.timer){ // no timer: one photo per press, editor opens when every slot is filled
-    audio(); const n=shotCount(); if(state.shots.length>=n){ state.shots=[]; state.crops=[]; }
+    audio(); const n=shotCount(); if(state.shots.length>=n){ state.shots=[]; state.clips=[]; state.crops=[]; }
     const fl=$('#flash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); shutterSound();
-    state.shots.push(grab(video, video.videoWidth, video.videoHeight, state.mirror)); renderLive();
+    state.shots.push(grab(video, video.videoWidth, video.videoHeight, state.mirror)); state.clips[state.shots.length-1]=takeClip(); renderLive();
     if(state.shots.length>=n){ tally('shots'); state.busy=true; await sleep(600); state.busy=false; openEditor(); }
     return;
   }
-  audio(); state.busy=true; state.cancel=false; setShootUI(true); state.shots=[]; state.crops=[]; renderLive();
+  audio(); state.busy=true; state.cancel=false; setShootUI(true); state.shots=[]; state.clips=[]; state.crops=[]; renderLive();
   const n=shotCount(), pill=$('#pill'), cnt=$('#count'); pill.hidden=false;
   outer: for(let i=0;i<n;i++){
     pill.textContent=`${i+1} / ${n}`;
@@ -784,12 +796,12 @@ async function shoot(){
     for(let t=T;t>0;t--){ cnt.textContent=t; cnt.classList.remove('pop'); void cnt.offsetWidth; cnt.classList.add('pop'); beep(t===1); if(!await wait(1000)) break outer; }
     cnt.textContent='';
     const fl=$('#flash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); shutterSound();
-    state.shots.push(grab(video, video.videoWidth, video.videoHeight, state.mirror));
+    state.shots.push(grab(video, video.videoWidth, video.videoHeight, state.mirror)); state.clips[state.shots.length-1]=takeClip();
     renderLive();
     if(i<n-1 && !await wait(800)) break;
   }
   pill.hidden=true; cnt.textContent=''; state.busy=false; setShootUI(false);
-  if(state.cancel){ state.cancel=false; state.shots=[]; renderLive(); toast('ยกเลิกแล้ว'); return; }
+  if(state.cancel){ state.cancel=false; state.shots=[]; state.clips=[]; renderLive(); toast('ยกเลิกแล้ว'); return; }
   tally('shots'); await sleep(500); openEditor();
 }
 function flipCam(){
@@ -800,7 +812,7 @@ function flipCam(){
   startCam();
 }
 async function handleUpload(files){
-  const n=shotCount(); state.shots=[]; state.crops=[];
+  const n=shotCount(); state.shots=[]; state.clips=[]; state.crops=[];
   for(const f of [...files].slice(0,n)){
     const url=URL.createObjectURL(f);
     const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; }).catch(()=>null);
@@ -1721,7 +1733,7 @@ function drawBase(c,o){
 }
 
 async function openEditor(tab){
-  camFullSet(false); stopCam();
+  camFullSet(false); stopCam(); $('#liveBtn').hidden=!(hasClips() && pickVideoType());
   ed.objects=[]; ed.strokes=[]; ed.sel=null; ed.history=[]; ed.cropSel=0; ed.cellShapes=[]; ed.shapeTarget='all';
   $(`#tabs [data-tab="${tab||'color'}"]`).click();
   sizeStage();
@@ -1739,7 +1751,7 @@ function sizeStage(){ const d=dims(); if(stage.width!==d.W||stage.height!==d.H){
 function backToBooth(){
   $('#editor').hidden=true; $('#booth').hidden=false;
   $('#st2').classList.remove('on'); $('#st1').classList.add('on');
-  state.shots=[]; state.crops=[]; renderLive(); startCam();
+  state.shots=[]; state.clips=[]; state.crops=[]; renderLive(); startCam();
 }
 function setFrame(id){
   const old=dims(); ed.frame=id; const d=dims(), delta=d.top-old.top, dx=(d.left||0)-(old.left||0);
@@ -1986,6 +1998,8 @@ function buildEditorUI(){
   $('#delSel').onclick=()=>{ if(ed.sel) removeSel(); else toast('แตะเลือกของบนรูปก่อนนะ'); };
   $('#retake').onclick=()=>{ if(confirm('ถ่ายใหม่? งานที่แต่งไว้จะหายนะ')) backToBooth(); };
   $('#download').onclick=download; $('#share').onclick=share;
+  $('#liveBtn').onclick=makeLiveVideo; $('#vidSave').onclick=saveLiveVideo; $('#vidShare').onclick=shareLiveVideo;
+  $('#vidClose').onclick=()=>{ $('#vidPlayer').pause(); $('#vidDlg').close(); };
 }
 let doodleIcons=null;
 function getDoodleIcons(){ if(doodleIcons) return doodleIcons; doodleIcons={};
@@ -2152,7 +2166,7 @@ async function downloadQRCard(){
 
 /* ---- visit counter (free Abacus counter; counts once per browser session, only on the live site) ---- */
 const COUNT_URL='https://abacus.jasoncameron.dev', COUNT_NS='chaechae-photobooth', countLive=()=>/github\.io$/.test(location.hostname) && !isOwner();
-const STAT_KEYS=['shots','saves','pdfs'];
+const STAT_KEYS=['shots','saves','pdfs','videos'];
 function cfetch(u){ const ac=new AbortController(); setTimeout(()=>ac.abort(),8000); return fetch(u,{signal:ac.signal}); } // counter service can hang; never wait long
 function hit(key,cb){ cfetch(`${COUNT_URL}/hit/${COUNT_NS}/${key}`).then(r=>r.ok&&r.json()).then(j=>{ if(j && typeof j.value==='number' && cb) cb(j.value); }).catch(()=>{}); }
 function tally(key){ if(!countLive()) return; // one event = +1, fire and forget
@@ -2271,6 +2285,56 @@ function sampleFrame(w,h){ // camera frame (or a soft placeholder when there is 
   return c; }
 function renderBoothFilterThumbs(){ const src=sampleFrame(CELL_W/2,CELL_H/2);
   document.querySelectorAll('#boothFilters .bft').forEach(b=>{ const cv=b.querySelector('canvas'), out=processShot(src,{z:1,x:0,y:0},0,cv.width,cv.height,defaultAdj(b.dataset.k)); cv.getContext('2d').drawImage(out,0,0); }); }
+/* ---- live clip buffer: the booth keeps the last ~1.2 s of camera frames; each shot freezes a copy ---- */
+const CLIP_N=12, CLIP_MS=100, clipRing=[]; let clipHead=0, clipCount=0;
+function clipTick(){
+  if(!stream || !video.videoWidth || $('#booth').hidden) return;
+  const s=Math.min(1,640/Math.max(video.videoWidth,video.videoHeight)), w=Math.round(video.videoWidth*s), h=Math.round(video.videoHeight*s);
+  let c=clipRing[clipHead]; if(!c){ c=clipRing[clipHead]=document.createElement('canvas'); }
+  if(c.width!==w||c.height!==h){ c.width=w; c.height=h; }
+  const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); if(state.mirror){ x.translate(w,0); x.scale(-1,1); } x.drawImage(video,0,0,w,h);
+  clipHead=(clipHead+1)%(CLIP_N+2); clipCount=Math.min(clipCount+1,CLIP_N+2); }
+setInterval(clipTick,CLIP_MS);
+function takeClip(){ if(clipCount<4) return null; const n=Math.min(CLIP_N,clipCount), out=[], L=CLIP_N+2;
+  for(let k=n;k>=1;k--){ const src=clipRing[(clipHead-k+L)%L]; if(!src) continue; const c=document.createElement('canvas'); c.width=src.width; c.height=src.height; c.getContext('2d').drawImage(src,0,0); out.push(c); }
+  return out.length>=4?out:null; }
+const hasClips=()=>state.clips.some(Boolean);
+
+/* ---- looping video: every camera slot plays its clip forwards then backwards, with the frame, stickers and filters ---- */
+function pickVideoType(){ if(!window.MediaRecorder) return null; for(const t of ['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm']) if(MediaRecorder.isTypeSupported(t)) return t; return null; }
+let liveVid=null;
+async function makeLiveVideo(){
+  const type=pickVideoType(); if(!type){ toast('เบราว์เซอร์นี้สร้างวิดีโอไม่ได้ ลองเปิดด้วย Chrome หรือ Safari'); return; }
+  if(!hasClips()){ toast('ภาพเคลื่อนไหวใช้ได้กับรูปที่ถ่ายจากกล้องเท่านั้น'); return; }
+  const btn=$('#liveBtn'), label=btn.innerHTML; btn.disabled=true;
+  const keepProc=ed.proc, keepSel=ed.sel, keepTab=ed.tab, d=dims();
+  const sc=Math.min(1,1280/Math.max(d.W,d.H)), OW=Math.round(d.W*sc/2)*2, OH=Math.round(d.H*sc/2)*2, frames=[];
+  const nF=Math.max(...state.clips.map(c=>c?c.length:0));
+  try{
+    ed.sel=null; ed.tab='_video';
+    for(let f=0;f<nF;f++){
+      btn.textContent=`กำลังเตรียม ${Math.round(f/nF*100)}%`; await sleep(0);
+      ed.proc=state.shots.map((sh,i)=>{ const cl=state.clips[i]; if(!cl) return keepProc[i]; return processShot(cl[Math.min(f,cl.length-1)],crop(i),i); });
+      render(); const c=document.createElement('canvas'); c.width=OW; c.height=OH; const x=c.getContext('2d'); x.imageSmoothingQuality='high'; x.drawImage(stage,0,0,OW,OH); frames.push(c); }
+  } finally { ed.proc=keepProc; ed.sel=keepSel; ed.tab=keepTab; render(); }
+  const seq=frames.concat(frames.slice(1,-1).reverse()), loops=3, fps=12;
+  const out=document.createElement('canvas'); out.width=OW; out.height=OH; const ox=out.getContext('2d'); ox.drawImage(frames[0],0,0);
+  const st=out.captureStream(fps), rec=new MediaRecorder(st,{mimeType:type, videoBitsPerSecond:8e6}), chunks=[];
+  rec.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+  const done=new Promise(r=>rec.onstop=r); rec.start(250);
+  const total=seq.length*loops; let i=0; const t0=performance.now();
+  await new Promise(res=>{ (function step(){ const want=Math.floor((performance.now()-t0)/(1000/fps)); if(want>=total){ res(); return; }
+      if(want!==i){ i=want; ox.drawImage(seq[i%seq.length],0,0); btn.textContent=`กำลังอัดวิดีโอ ${Math.round(i/total*100)}%`; } setTimeout(step,15); })(); });
+  await sleep(120); rec.stop(); await done; st.getTracks().forEach(t=>t.stop());
+  btn.innerHTML=label; btn.disabled=false;
+  const blob=new Blob(chunks,{type:type.split(';')[0]}); if(!blob.size){ toast('สร้างวิดีโอไม่สำเร็จ ลองใหม่อีกครั้ง'); return; }
+  liveVid={blob, ext:type.includes('mp4')?'mp4':'webm'}; const v=$('#vidPlayer'); if(v.src) URL.revokeObjectURL(v.src); v.src=URL.createObjectURL(blob);
+  $('#vidDlg').showModal(); v.play().catch(()=>{});
+}
+async function saveLiveVideo(){ if(!liveVid) return; saveBlob(liveVid.blob, fileName().replace('.png','-live.'+liveVid.ext)); toast('เซฟวิดีโอแล้ว'); tally('videos'); }
+async function shareLiveVideo(){ if(!liveVid) return; const f=new File([liveVid.blob], fileName().replace('.png','-live.'+liveVid.ext), {type:liveVid.blob.type});
+  if(navigator.canShare && navigator.canShare({files:[f]})){ try{ await navigator.share({files:[f], title:'chaechae'}); tally('videos'); }catch(e){} } else { toast('เบราว์เซอร์นี้แชร์ตรงไม่ได้ — ดาวน์โหลดให้แทนนะ'); saveLiveVideo(); } }
+
 function liveLoop(t){
   requestAnimationFrame(liveLoop);
   const lv=$('#livefx'), on=state.filter!=='normal' && stream && video.videoWidth && !$('#booth').hidden;
