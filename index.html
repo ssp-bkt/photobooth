@@ -115,6 +115,26 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .camshoot:active span{transform:scale(.88)}
 .camshoot.busy span{background:var(--accent);border-radius:10px;transform:scale(.5)}
 .camhint{position:absolute;right:16px;bottom:16px;color:rgba(255,255,255,.7);font-size:12px}
+.camfull{position:absolute;left:14px;bottom:24px;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:99px;border:0;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.cam.full{position:fixed;inset:0;z-index:60;aspect-ratio:auto;max-height:none;min-height:0;width:auto;height:auto;border-radius:0}
+.cam.full video,.cam.full #livefx{object-fit:contain}
+.cam.full .camshoot{bottom:calc(28px + env(safe-area-inset-bottom));width:84px;height:84px}
+.cam.full .camfull{bottom:auto;top:calc(12px + env(safe-area-inset-top));left:auto;right:12px}
+.cam.full .camflip{right:auto;left:12px;top:calc(56px + env(safe-area-inset-top))}
+.cam.full .pill{top:calc(14px + env(safe-area-inset-top))}
+.cam.full .camhint{display:none}
+body.camfull-on{overflow:hidden}
+body.camfull-on .camcard{-webkit-backdrop-filter:none;backdrop-filter:none;z-index:60}
+body.camfull-on .camcard .deco{display:none}
+.zoombtn{position:absolute;top:12px;right:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+dialog#zoom{border:0;padding:0;margin:0;width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;background:rgba(16,14,20,.92);color:#fff;overflow:auto;overscroll-behavior:contain}
+dialog#zoom::backdrop{background:rgba(16,14,20,.92)}
+.zoomin{min-height:100%;display:flex;align-items:center;justify-content:center;padding:56px 12px 28px;box-sizing:border-box}
+#zoomImg{max-width:100%;max-height:calc(100dvh - 90px);height:auto;cursor:zoom-in;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+#zoomImg.big{max-width:none;max-height:none;width:auto;cursor:zoom-out}
+.zoomclose{position:fixed;top:12px;right:12px;z-index:2}
+.zoomhint{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
+.mkprev canvas{cursor:zoom-in}
 @media (max-width:600px){.camhint{display:none}}
 
 /* live layout preview */
@@ -154,7 +174,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .fxstatus{font-size:12.5px;color:var(--muted);margin-top:8px;min-height:1em}
 
 /* editor */
-.stagewrap{display:flex;justify-content:center;align-items:flex-start;padding:28px;border-radius:24px;min-height:320px;
+.stagewrap{position:relative;display:flex;justify-content:center;align-items:flex-start;padding:28px;border-radius:24px;min-height:320px;
   background-color:var(--chip);background-image:radial-gradient(var(--line) 1px,transparent 1.2px);background-size:18px 18px}
 #stage{max-width:100%;max-height:calc(100vh - 180px);width:auto;height:auto;touch-action:none;filter:drop-shadow(0 16px 28px rgba(0,0,0,.16))}
 #stage.draw{cursor:crosshair}
@@ -232,7 +252,9 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .stats{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;margin:16px 0 0}.stats span{background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12.5px}.stats b{color:var(--ink);font-weight:600}
 .support{display:flex;align-items:center;gap:16px;width:max-content;max-width:100%;box-sizing:border-box;margin:18px auto 0;padding:12px 18px 12px 12px;border-radius:20px;background:var(--surface);border:1px solid rgba(0,0,0,.06);text-align:left}
 .support img{width:116px;height:116px;flex:none;border-radius:10px}
-.support b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:2px}.support span{font-size:12.5px;line-height:1.6}
+.support b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:2px}.support span{display:block;font-size:12.5px;line-height:1.6}.support i{font-style:normal;white-space:nowrap}
+.nw{display:inline-block;max-width:100%}
+@media (max-width:600px){.support{flex-direction:column;text-align:center;gap:10px;padding:16px 18px;width:auto}.support span{font-size:13px}.support span{line-height:1.7}}
 /* visit counter pill */
 .visits{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:6px 12px;white-space:nowrap}
 .visits b{color:var(--ink);font-weight:600}
@@ -276,6 +298,11 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 </style>
 </head>
 <body>
+<dialog id="zoom" aria-label="ขยายดู">
+  <button class="btn zoomclose" id="zoomClose" aria-label="ปิด">✕</button>
+  <div class="zoomin"><img id="zoomImg" alt="ภาพขยาย"></div>
+  <div class="zoomhint">แตะรูปเพื่อดูขนาดจริง · แตะอีกครั้งเพื่อย่อ</div>
+</dialog>
 <div class="sky" aria-hidden="true"><span class="moon"></span><span class="tw" style="left:6%;top:18%;animation-delay:.2s"></span><span class="tw" style="left:46%;top:6%;animation-delay:1.1s"></span><span class="tw" style="left:88%;top:34%;animation-delay:2s"></span><span class="tw" style="left:24%;top:72%;animation-delay:.7s"></span><span class="tw" style="left:70%;top:82%;animation-delay:1.6s"></span><span class="tw" style="left:96%;top:64%;animation-delay:2.6s"></span></div>
 <header>
   <div class="brand"><span class="wm">chaechae<span class="by">by ssp</span></span><img class="spark" data-deco="chromeSparkle" alt=""><small>photobooth online<br>ถ่ายเลย ไม่ต้องลงแอป</small></div>
@@ -303,6 +330,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
         <div class="flash" id="flash"></div>
         <div class="camhint" id="camHint">แตะจอ หรือกด Space เพื่อถ่าย</div>
         <button class="camshoot" id="camShoot" aria-label="ถ่ายรูป"><span></span></button>
+        <button class="camfull" id="camFull" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><b>เต็มจอ</b></button>
       </div>
       <div class="bfrow"><div class="bfilters" id="boothFilters"></div></div>
       <div class="lpwrap"><div class="lp" id="lp"></div><div class="lptext" id="lpText"></div></div>
@@ -326,7 +354,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 
   <!-- ===== EDITOR ===== -->
   <section id="editor" class="grid" hidden>
-    <div class="stagewrap"><canvas id="stage"></canvas></div>
+    <div class="stagewrap"><canvas id="stage"></canvas><button class="zoombtn" id="zoomStage" aria-label="ขยายดูรูป"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20M10.5 7.5v6M7.5 10.5h6"/></svg>ขยายดู</button></div>
 
     <div class="card side">
       <div class="tabs" id="tabs">
@@ -421,7 +449,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
     <div class="stats" id="stats" hidden><span>ถ่ายไปแล้ว <b id="stat-shots">0</b> ครั้ง</span><span>เซฟรูป <b id="stat-saves">0</b> ครั้ง</span><span>บันทึก PDF <b id="stat-pdfs">0</b> ครั้ง</span></div>
     <div class="support" id="support">
       <img id="supportQR" src="donate-qr.png" width="353" height="353" alt="QR พร้อมเพย์ สนับสนุนผู้สร้าง" loading="lazy">
-      <div><b>สนับสนุนผู้สร้าง ✦</b><span>ชอบ chaechae ไหม ใช้ฟรีได้เสมอ<br>ถ้าอยากเลี้ยงขนมคนทำ สแกน QR พร้อมเพย์นี้<br>ด้วยแอปธนาคารได้เลย</span></div>
+      <div><b>สนับสนุนผู้สร้าง ✦</b><span><i>ชอบ chaechae ไหม</i> <i>ใช้ฟรีได้เสมอ</i><br><i>อยากเลี้ยงขนมคนทำ</i> <i>สแกนด้วยแอปธนาคารได้เลย</i></span></div>
     </div>
   </footer>
 </main>
@@ -657,7 +685,7 @@ function buildBoothUI(){
 }
 function renderSummary(){
   const L=LAYOUTS[state.layout];
-  $('#summary').textContent=`${L.name} · ฟิลเตอร์ ${FILTERS[state.filter][0]} · ${state.timer?`นับถอยหลัง ${state.timer} วิ ถ่ายต่อกันอัตโนมัติ`:'ไม่ตั้งเวลา กดถ่ายทีละรูป'} · ถ่ายเสร็จค่อยแต่ง`;
+  phraseSet($('#summary'),`${L.name} · ฟิลเตอร์ ${FILTERS[state.filter][0]} · ${state.timer?`นับถอยหลัง ${state.timer} วิ ถ่ายต่อกันอัตโนมัติ`:'ไม่ตั้งเวลา กดถ่ายทีละรูป'} · ถ่ายเสร็จค่อยแต่ง`);
 }
 
 function renderLive(){
@@ -704,6 +732,20 @@ const crop = i => state.crops[i] || (state.crops[i]={z:1,x:0,y:0});
 function cropGeom(src,cr){ const r=Math.max(CELL_W/src.width, CELL_H/src.height)*cr.z, dw=src.width*r, dh=src.height*r;
   return {dw, dh, left:(CELL_W-dw)/2+cr.x*(dw-CELL_W)/2, top:(CELL_H-dh)/2+cr.y*(dh-CELL_H)/2}; }
 
+/* full-screen shooting: the camera box fills the screen (plus real browser full screen where allowed) */
+const ICON_FULL='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>', ICON_EXIT='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
+function camFullSet(on){ const cam=$('#cam'); if(cam.classList.contains('full')===on) return;
+  cam.classList.toggle('full',on); document.body.classList.toggle('camfull-on',on);
+  $('#camFull').innerHTML=on?ICON_EXIT+'<b>ย่อ</b>':ICON_FULL+'<b>เต็มจอ</b>'; $('#camFull').setAttribute('aria-label',on?'ออกจากเต็มจอ':'เต็มจอ');
+  try{ if(on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+       if(!on && document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }catch(e){}
+  if(typeof renderLive==='function') renderLive(); }
+document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement) camFullSet(false); });
+/* Thai has no spaces between words, so lines break mid-phrase on phones. Keep each space-separated phrase on one line. */
+function phraseWrap(el){ [...el.childNodes].forEach(n=>{ if(n.nodeType===3){ if(!n.textContent.trim()) return; const f=document.createDocumentFragment();
+    n.textContent.split(/(\s+)/).forEach(part=>{ if(!part) return; if(/^\s+$/.test(part)) f.appendChild(document.createTextNode(part)); else { const sp=document.createElement('span'); sp.className='nw'; sp.textContent=part; f.appendChild(sp); } }); n.replaceWith(f); }
+  else if(n.nodeType===1 && !['BUTTON','INPUT','B','I','SPAN','CANVAS','IMG','SVG'].includes(n.tagName)) phraseWrap(n); }); }
+function phraseSet(el,text){ el.textContent=text; phraseWrap(el); }
 function setShootUI(busy){
   $('#shootText').textContent = busy ? 'ยกเลิก' : 'เริ่มถ่าย';
   $('#camShoot').classList.toggle('busy',busy); $('#camHint').hidden=busy;
@@ -1664,7 +1706,7 @@ function drawBase(c,o){
 }
 
 async function openEditor(tab){
-  stopCam();
+  camFullSet(false); stopCam();
   ed.objects=[]; ed.strokes=[]; ed.sel=null; ed.history=[]; ed.cropSel=0; ed.cellShapes=[]; ed.shapeTarget='all';
   $(`#tabs [data-tab="${tab||'color'}"]`).click();
   sizeStage();
@@ -1979,6 +2021,13 @@ function sprinkle(){
   ed.sel=null; commit(); render();
 }
 
+/* ---- enlarge view (stage and event preview) ---- */
+let zoomURL=null;
+function openZoom(blobOrCanvas){ const show=b=>{ if(zoomURL) URL.revokeObjectURL(zoomURL); zoomURL=URL.createObjectURL(b); const im=$('#zoomImg'); im.classList.remove('big'); im.src=zoomURL; const d=$('#zoom'); if(!d.open) d.showModal(); };
+  if(blobOrCanvas instanceof Blob) show(blobOrCanvas); else blobOrCanvas.toBlob(show,'image/png'); }
+$('#zoomImg').onclick=()=>$('#zoomImg').classList.toggle('big');
+$('#zoomClose').onclick=()=>$('#zoom').close();
+$('#zoom').addEventListener('click',e=>{ if(e.target.classList.contains('zoomin')) $('#zoom').close(); });
 /* ---- export ---- */
 function exportBlob(){ return new Promise(res=>{ const s=ed.sel; ed.sel=null; render(); stage.toBlob(b=>{ ed.sel=s; render(); res(b); },'image/png'); }); }
 function fileName(){ const d=new Date(), p=n=>String(n).padStart(2,'0'); return `chaechae-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.png`; }
@@ -2043,6 +2092,8 @@ function buildMaker(){
   ['mkName','mkSub','mkFrame','mkLayout','mkShape','mkLock'].forEach(id=>{ $('#'+id).addEventListener('input',mkUpdate); $('#'+id).addEventListener('change',mkUpdate); });
   $('#mkLogo').addEventListener('change',()=>{ const u=$('#mkLogo').value.trim(); loadLogo(u,im=>{ mk.logoImg=im; if(u && !im) $('#mkHint').textContent='โหลดโลโก้จากลิงก์นี้ไม่ได้ (ต้องเป็นลิงก์รูป https ที่อนุญาตให้เว็บอื่นใช้)'; mkUpdate(); }); });
   $('#mkClose').onclick=()=>$('#maker').close();
+  $('#mkPrev').title='แตะเพื่อขยายดู'; $('#mkPrev').onclick=()=>{ const c=mkCfg(), keep=state.layout; state.layout=c.l; const F=FRAMES.find(f=>f.id===c.f), S=SHAPES.find(q=>q.id===c.sh), d=dims(F), cv=document.createElement('canvas'); cv.width=d.W; cv.height=d.H;
+    drawBase(cv.getContext('2d'),{...d,F,S,imgs:[],title:c.n||'ชื่องานของคุณ',titleFont:c.ft,subtitle:c.s,logo:mk.logoImg,date:'',photos:d.collage?presetPhotos(d.collage):null}); state.layout=keep; openZoom(cv); };
   $('#mkAgree').addEventListener('change',mkUpdate);
   $('#mkCopy').onclick=async()=>{ const b=$('#mkCopy'); try{ await navigator.clipboard.writeText($('#mkLink').value); }catch(e){ $('#mkLink').select(); document.execCommand('copy'); } b.textContent='คัดลอกแล้ว ✓'; setTimeout(()=>b.textContent='คัดลอกลิงก์',1600); };
   $('#mkOpen').onclick=()=>window.open($('#mkLink').value,'_blank','noopener');
@@ -2210,17 +2261,21 @@ requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
 visitCounter(); loadStats();
+document.querySelectorAll('.about h1, .about p, .side .hint, .mk .hint').forEach(phraseWrap);
 applyEvent();
 buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
 $('#openMaker').onclick=openMaker;
 $('#printBtn').onclick=openPrinter;
+$('#zoomStage').onclick=async()=>openZoom(await exportBlob());
 if(new URLSearchParams(location.search).has('maker')) openMaker();
 if(new URLSearchParams(location.search).has('owner')){ history.replaceState(null,'',location.pathname); setTimeout(ownerLogin,300); }
-document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));$('#shoot').onclick=shoot;
+document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));$('#shoot').onclick=()=>{ if(!state.busy && stream && video.videoWidth) camFullSet(true); shoot(); };
+$('#camFull').onclick=e=>{ e.stopPropagation(); camFullSet(!$('#cam').classList.contains('full')); };
 $('#camShoot').onclick=e=>{ e.stopPropagation(); shoot(); };
 $('#camFlip').onclick=e=>{ e.stopPropagation(); flipCam(); };
 $('#cam').addEventListener('click', e=>{ if(e.target.closest('button') || !$('#camMsg').hidden || state.busy) return; shoot(); });
 document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && $('#cam').classList.contains('full') && !state.busy){ camFullSet(false); return; }
   if($('#booth').hidden || ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
   const onBtn=e.target.tagName==='BUTTON';
   if(e.code==='Space' || (e.key==='Enter' && !onBtn)){ e.preventDefault(); if(!state.busy) shoot(); }
