@@ -72,7 +72,7 @@ header,main{position:relative;z-index:1}
 .deco{position:absolute;width:66px;height:66px;pointer-events:none;z-index:4;filter:drop-shadow(0 5px 10px rgba(0,0,0,.16))}
 .deco.d1{top:-20px;left:-18px;transform:rotate(-14deg)}
 .deco.d2{top:-24px;right:34px;width:54px;height:54px;transform:rotate(12deg)}
-.deco.d3{bottom:70px;right:-20px;transform:rotate(-8deg)}
+.deco.d3{bottom:150px;right:-22px;transform:rotate(-8deg)}
 .deco.d4{bottom:-16px;left:40%;width:48px;height:48px;transform:rotate(10deg)}
 @media (max-width:920px){.deco.d1{left:-6px}.deco.d3{right:-4px}}
 @media (max-width:600px){.deco{width:44px;height:44px}.deco.d3,.deco.d4{display:none}}
@@ -165,14 +165,14 @@ dialog#vidDlg::backdrop{background:rgba(16,14,20,.6);-webkit-backdrop-filter:blu
 @media (max-width:600px){.camhint{display:none}}
 
 /* live layout preview */
-.lpwrap{display:flex;align-items:center;gap:16px;margin-top:16px}
+.lpwrap{display:grid;grid-template-columns:auto 1fr minmax(0,1.1fr);align-items:center;gap:16px;margin-top:16px}
 .lp{display:inline-grid;gap:4px;padding:6px;background:var(--chip);border-radius:10px;flex:none}
 .lp div{aspect-ratio:4/3;border-radius:4px;background:var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
 .lp img{width:100%;height:100%;object-fit:cover;display:block}
 .lptext{font-size:13px;color:var(--muted);line-height:1.6;flex:1;min-width:0}
-.upbtn{margin-left:auto;margin-right:34px;display:flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;border-radius:16px;border:1.5px dashed var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;text-align:left;flex:none}
+.upbtn{justify-self:center;width:100%;max-width:260px;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 12px;border-radius:18px;border:1.5px dashed var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;text-align:center}
 .upbtn:hover{border-color:var(--ink)}.upbtn span{font-size:11.5px;color:var(--muted);line-height:1.35}.upbtn b{display:block;font-size:13.5px;color:var(--ink);font-weight:600}
-@media (max-width:600px){.upbtn{margin-right:0;padding:8px 12px 8px 10px}.upbtn span{font-size:10.5px}}
+@media (max-width:600px){.lpwrap{grid-template-columns:auto 1fr;}.upbtn{grid-column:1/-1;max-width:none;flex-direction:row;gap:12px;padding:12px}.upbtn svg{width:36px;height:36px}.upbtn span{text-align:left}}
 .lptext b{color:var(--ink);font-weight:600;font-size:15px;display:block}
 
 /* layout cards */
@@ -373,7 +373,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
   <section id="booth" class="grid">
     <div class="card camcard">
       <img class="deco d2" data-deco="chromeStar" alt="">
-      <img class="deco d3" data-deco="pixelHeart" alt=""><img class="deco d4" data-deco="cherries" alt="">
+      <img class="deco d3" data-deco="pixelHeart" alt="">
       <div class="cam" id="cam">
         <video id="video" class="mirror" playsinline muted></video>
         <canvas id="livefx" class="mirror" hidden></canvas>
@@ -392,7 +392,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
         <button class="camfull" id="camFull" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><b>เต็มจอ</b></button>
       </div>
       <div class="bfrow" id="bfRow"><button class="bfnav prev" id="bfPrev" aria-label="ฟิลเตอร์ก่อนหน้า"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="bfilters" id="boothFilters"></div><button class="bfnav next" id="bfNext" aria-label="ดูฟิลเตอร์เพิ่ม"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
-      <div class="lpwrap"><div class="lp" id="lp"></div><div class="lptext" id="lpText"></div><button class="upbtn" id="uploadBtn" aria-label="อัปโหลดรูปจากเครื่อง"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-5-6 6M3 18l4-4 3 3"/><path d="M17 2v6M14.5 4.5L17 2l2.5 2.5" stroke-width="2"/></svg><span><b>อัปโหลดรูป</b>จากเครื่องแทนกล้อง</span></button></div>
+      <div class="lpwrap"><div class="lp" id="lp"></div><div class="lptext" id="lpText"></div><button class="upbtn" id="uploadBtn" aria-label="อัปโหลดรูปจากเครื่อง"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-5-6 6M3 18l4-4 3 3"/><path d="M17 2v6M14.5 4.5L17 2l2.5 2.5" stroke-width="2"/></svg><span><b>อัปโหลดรูป</b>จากเครื่องแทนกล้อง</span></button></div>
     </div>
 
     <div class="card side">
