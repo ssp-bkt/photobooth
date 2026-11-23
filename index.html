@@ -206,7 +206,16 @@ dialog#zoom::backdrop{background:rgba(16,14,20,.92)}
 .stickers button{border:0;background:var(--chip);border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:0;transition:transform .1s}
 .stickers button.art img{width:84%;height:84%}
 .stickers button.meme{grid-column:1/-1;aspect-ratio:auto;justify-content:flex-start;padding:11px 14px;font-size:14px;font-weight:600;text-align:left}
-.bfrow{margin-top:12px}
+.bfrow{margin-top:12px;position:relative}
+.bfrow.can-r .bfilters{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent)}
+.bfrow.can-l .bfilters{-webkit-mask-image:linear-gradient(90deg,transparent,#000 56px);mask-image:linear-gradient(90deg,transparent,#000 56px)}
+.bfrow.can-l.can-r .bfilters{-webkit-mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent)}
+.bfnav{position:absolute;top:calc(50% - 22px);width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:none;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.14);z-index:2}
+.bfnav.prev{left:-6px}.bfnav.next{right:-6px}
+.bfrow.can-l .bfnav.prev,.bfrow.can-r .bfnav.next{display:flex}
+.bfnav.next{animation:nudge 1.6s ease-in-out 3}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.bfnav.next{animation:none}}
 .bfilters{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;scroll-snap-type:x proximity}
 .bfilters::-webkit-scrollbar{display:none}
 .bft{flex:none;width:68px;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--ink2);line-height:1.2;text-align:center;scroll-snap-align:start}
@@ -332,7 +341,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
         <button class="camshoot" id="camShoot" aria-label="ถ่ายรูป"><span></span></button>
         <button class="camfull" id="camFull" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><b>เต็มจอ</b></button>
       </div>
-      <div class="bfrow"><div class="bfilters" id="boothFilters"></div></div>
+      <div class="bfrow" id="bfRow"><button class="bfnav prev" id="bfPrev" aria-label="ฟิลเตอร์ก่อนหน้า"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="bfilters" id="boothFilters"></div><button class="bfnav next" id="bfNext" aria-label="ดูฟิลเตอร์เพิ่ม"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
       <div class="lpwrap"><div class="lp" id="lp"></div><div class="lptext" id="lpText"></div></div>
     </div>
 
@@ -746,6 +755,10 @@ function phraseWrap(el){ [...el.childNodes].forEach(n=>{ if(n.nodeType===3){ if(
     n.textContent.split(/(\s+)/).forEach(part=>{ if(!part) return; if(/^\s+$/.test(part)) f.appendChild(document.createTextNode(part)); else { const sp=document.createElement('span'); sp.className='nw'; sp.textContent=part; f.appendChild(sp); } }); n.replaceWith(f); }
   else if(n.nodeType===1 && !['BUTTON','INPUT','B','I','SPAN','CANVAS','IMG','SVG'].includes(n.tagName)) phraseWrap(n); }); }
 function phraseSet(el,text){ el.textContent=text; phraseWrap(el); }
+/* booth filter strip: arrows + edge fade show there is more to scroll */
+function bfNav(){ const el=$('#boothFilters'), row=$('#bfRow'); if(!el||!row) return; const max=el.scrollWidth-el.clientWidth;
+  row.classList.toggle('can-l', el.scrollLeft>4); row.classList.toggle('can-r', el.scrollLeft<max-4); }
+function bfScroll(dir){ const el=$('#boothFilters'); el.scrollBy({left:dir*el.clientWidth*.8, behavior:'smooth'}); }
 function setShootUI(busy){
   $('#shootText').textContent = busy ? 'ยกเลิก' : 'เริ่มถ่าย';
   $('#camShoot').classList.toggle('busy',busy); $('#camHint').hidden=busy;
@@ -2261,6 +2274,10 @@ requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
 visitCounter(); loadStats();
+$('#bfPrev').onclick=e=>{ e.stopPropagation(); bfScroll(-1); }; $('#bfNext').onclick=e=>{ e.stopPropagation(); bfScroll(1); };
+$('#boothFilters').addEventListener('scroll',bfNav,{passive:true}); addEventListener('resize',bfNav);
+$('#boothFilters').addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){ const el=e.currentTarget; if(el.scrollWidth>el.clientWidth){ el.scrollLeft+=e.deltaY; e.preventDefault(); } } },{passive:false});
+try{ new ResizeObserver(bfNav).observe($('#boothFilters')); }catch(e){} setTimeout(bfNav,300);
 document.querySelectorAll('.about h1, .about p, .side .hint, .mk .hint').forEach(phraseWrap);
 applyEvent();
 buildBoothUI(); buildEditorUI(); renderSummary(); afterEventUI();
