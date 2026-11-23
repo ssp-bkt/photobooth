@@ -264,11 +264,11 @@ dialog#vidDlg::backdrop{background:rgba(16,14,20,.6);-webkit-backdrop-filter:blu
 .bft canvas{width:68px;height:51px;border-radius:9px;border:2px solid transparent;display:block;background:var(--chip)}
 .bft.on canvas{border-color:var(--ink)}.bft.on{color:var(--ink);font-weight:600}
 .ftiles{display:block}
-.fgbody{display:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:4px 0 10px}
-.fgh.open+.fgbody{display:grid}
-.fgh{display:flex;align-items:center;gap:8px;width:100%;border:0;border-top:1px solid var(--line);background:none;padding:11px 2px;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
-.ftiles .fgh:first-child{border-top:0}.fgh small{font-weight:500;color:var(--muted);font-size:11.5px;background:var(--chip);border-radius:99px;padding:1px 8px}
-.fgh .chev{margin-left:auto;transition:transform .2s;color:var(--muted)}.fgh.open .chev{transform:rotate(180deg)}
+.fgtabs{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px}
+.fgtabs button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.fgtabs button small{font-size:11px;color:var(--muted)}
+.fgtabs button.on{background:var(--on);color:var(--on-ink);border-color:var(--on);font-weight:600}.fgtabs button.on small{color:inherit;opacity:.75}
+.fgbody{display:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:2px 0 8px}.fgbody.on{display:grid}
 .ftiles .ftile{font-size:10.5px}
 @media (max-width:600px){.fgbody{gap:5px}}
 .ftile{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--ink2);line-height:1.25;text-align:center}
@@ -2590,7 +2590,7 @@ stage.addEventListener('wheel', e=>{ if(ed.tab!=='crop') return; e.preventDefaul
 /* ---- editor panels ---- */
 function syncColorPanel(){
   document.querySelectorAll('#edFilters .ftile').forEach(b=>b.classList.toggle('on',b.dataset.k===ed.adj.filter));
-  { const on=document.querySelector('#edFilters .ftile.on'), h=on&&on.parentElement.previousElementSibling; if(h&&!h.classList.contains('open')&&!document.querySelector('#edFilters .fgh.open')) h.classList.add('open'); }
+  { const on=document.querySelector('#edFilters .ftile.on'); if(on && !on.parentElement.classList.contains('on') && window.showFilterGroup && !ed._fgPicked) showFilterGroup(on.parentElement.dataset.g); }
   $('#sl-amount').value=ed.adj.amount??100; $('#sv-amount').textContent=(ed.adj.amount??100)+'%';
   SLIDERS.forEach(([k])=>{ $('#sl-'+k).value=ed.adj[k]; $('#sv-'+k).textContent=ed.adj[k]; });
   $('#stamp').checked=!!ed.adj.stamp; $('#fisheye').checked=!!ed.adj.fisheye;
@@ -2615,14 +2615,16 @@ function buildEditorUI(){
   $('#cropResetAll').onclick=()=>{ state.crops=[]; syncCropPanel(); processShots(); renderFilterThumbs(); };
   // colour
   const ef=$('#edFilters');
+  const fgTabs=document.createElement('div'); fgTabs.className='fgtabs'; ef.appendChild(fgTabs);
+  const showGroup=g=>{ fgTabs.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.g===g)); ef.querySelectorAll('.fgbody').forEach(b=>b.classList.toggle('on',b.dataset.g===g)); };
+  window.showFilterGroup=showGroup;
   FILTER_GROUPS.forEach(gname=>{ const list=Object.entries(FILTERS).filter(([,f])=>f[3]===gname); if(!list.length) return;
-    const h=document.createElement('button'); h.className='fgh'; h.innerHTML=`<span>${gname}</span><small>${list.length}</small><svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`; ef.appendChild(h);
-    const body=document.createElement('div'); body.className='fgbody'; ef.appendChild(body);
-    h.onclick=()=>{ const open=h.classList.contains('open'); ef.querySelectorAll('.fgh').forEach(x=>x.classList.remove('open')); if(!open) h.classList.add('open'); };
+    const t=document.createElement('button'); t.dataset.g=gname; t.innerHTML=`${gname} <small>${list.length}</small>`; t.onclick=()=>{ ed._fgPicked=true; showGroup(gname); }; fgTabs.appendChild(t);
+    const body=document.createElement('div'); body.className='fgbody'; body.dataset.g=gname; ef.appendChild(body);
     for(const [k,[name,,,grp]] of list){
       const b=document.createElement('button'); b.className='ftile'; b.dataset.k=k; b.innerHTML=`<canvas width="120" height="90"></canvas><span>${name}</span>`;
       b.onclick=()=>{ const keep=ed.adj.fisheye; ed.adj=defaultAdj(k); ed.adj.fisheye=keep; syncColorPanel(); scheduleProcess(); }; body.appendChild(b); } });
-  { const first=ef.querySelector('.fgh'); if(first) first.classList.add('open'); }
+  showGroup(FILTER_GROUPS[0]);
   $('#sl-amount').oninput=e=>{ ed.adj.amount=+e.target.value; $('#sv-amount').textContent=e.target.value+'%'; scheduleProcess(); };
   const sl=$('#sliders');
   SLIDERS.forEach(([k,label,min,max])=>{ const d=document.createElement('div'); d.className='sl';
