@@ -103,6 +103,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .cam{position:relative;aspect-ratio:4/3;max-height:calc(100vh - 360px);min-height:240px;border-radius:18px;overflow:hidden;background:#0b0b0c;isolation:isolate}
 .cam video{width:100%;height:100%;object-fit:cover;display:block}
 #livefx{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+#slotView{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .mirror{transform:scaleX(-1)}
 .msg{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;text-align:center;padding:24px;background:#141416;font-size:15px;line-height:1.5}
 .msg .ic{width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:24px}
@@ -377,6 +378,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
       <div class="cam" id="cam">
         <video id="video" class="mirror" playsinline muted></video>
         <canvas id="livefx" class="mirror" hidden></canvas>
+        <canvas id="slotView" hidden></canvas>
         <div class="msg" id="camMsg">
           <div class="ic">📷</div>
           <div id="camMsgText">กำลังเปิดกล้อง… กด “อนุญาต” ให้เว็บใช้กล้อง</div>
@@ -397,6 +399,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 
     <div class="card side">
       <div class="panels">
+        <div class="sec"><div class="label">มุมมองตอนถ่าย <span>ดูในช่อง = เห็นรูปที่ถ่ายไปแล้วด้วย</span></div><div class="seg" id="viewSeg"></div></div>
         <div class="sec"><div class="label">เลือกช่อง</div><div class="layouts" id="layoutCards"></div></div>
         <div class="sec"><label class="switch">กลับด้านแบบกระจก<input type="checkbox" id="mirror" checked></label></div>
         <div class="hint">ถ่ายรูปก่อน แล้วค่อยแต่ง ใส่ฟิลเตอร์ กรอบ และสติ๊กเกอร์ในหน้าถัดไป</div>
@@ -741,6 +744,7 @@ function buildBoothUI(){
     b.onclick=()=>{ if(state.busy) return; state.layout=k; setOn(lc,b); state.shots=[]; state.clips=[]; state.crops=[]; renderLive(); };
     lc.appendChild(b);
   }
+  seg($('#viewSeg'), [['cam','กล้องเต็ม'],['slots','ดูในช่อง']], viewMode, k=>{ viewMode=k; try{ localStorage.setItem('cc-view',k); }catch(e){} });
   const tLabel=()=>{ $('#camTimerText').textContent=state.timer?`${state.timer} วิ`:'ไม่ตั้ง'; $('#camTimer').classList.toggle('off',!state.timer); };
   $('#camTimer').onclick=e=>{ e.stopPropagation(); if(state.busy) return; const i=TIMERS.indexOf(state.timer); state.timer=TIMERS[(i+1)%TIMERS.length]; tLabel(); renderSummary(); renderLive(); toast(state.timer?`นับถอยหลัง ${state.timer} วินาที ถ่ายต่อกันอัตโนมัติ`:'ไม่ตั้งเวลา — กดถ่ายทีละรูป'); };
   tLabel();
@@ -2928,6 +2932,32 @@ async function savePdf(){
    The camera image runs through the same colour engine as the editor at a small size, so what you
    see while shooting matches the result. Shots stay unfiltered, so the filter can still change later. */
 const liveSrc=document.createElement('canvas'); let liveLast=0;
+/* ---- slot view: the whole layout on screen, earlier shots in their slots and the live camera in the next one ---- */
+let viewMode='cam'; try{ viewMode=localStorage.getItem('cc-view')||'cam'; }catch(e){}
+const slotPrev=new Map();
+function slotShot(i){ const sh=state.shots[i]; if(!sh) return null; const key=i+'|'+state.filter; let e=slotPrev.get(key);
+  if(!e||e.src!==sh){ e={src:sh, img:state.filter==='normal'?sh:processShot(sh,{z:1,x:0,y:0},i,480,360,defaultAdj(state.filter))}; slotPrev.set(key,e); } return e.img; }
+function coverDraw(x,src,sw,sh,dx,dy,dw,dh,mirror){ const r=Math.max(dw/sw,dh/sh), w=sw*r, h=sh*r; x.save(); x.beginPath(); x.rect(dx,dy,dw,dh); x.clip();
+  if(mirror){ x.translate(dx+dw/2,0); x.scale(-1,1); x.translate(-(dx+dw/2),0); } x.drawImage(src,dx+(dw-w)/2,dy+(dh-h)/2,w,h); x.restore(); }
+function slotLoop(){ requestAnimationFrame(slotLoop);
+  const cv=$('#slotView'), on=viewMode==='slots' && stream && video.videoWidth && !$('#booth').hidden;
+  if(!on){ if(!cv.hidden) cv.hidden=true; return; } cv.hidden=false;
+  const box=cv.getBoundingClientRect(), dpr=Math.min(2,devicePixelRatio||1), W=Math.round(box.width*dpr), H=Math.round(box.height*dpr); if(!W||!H) return;
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  const x=cv.getContext('2d'), L=LAYOUTS[state.layout], n=L.cols*L.rows, gap=8*dpr, pad=14*dpr, padB=(H>420*dpr?110:96)*dpr;
+  const g=x.createLinearGradient(0,0,W,H); g.addColorStop(0,'#fbe9f1'); g.addColorStop(1,'#e8ecfb'); x.fillStyle=g; x.fillRect(0,0,W,H);
+  const cw0=(W-pad*2-gap*(L.cols-1))/L.cols, ch0=(H-pad-padB-gap*(L.rows-1))/L.rows, cw=Math.min(cw0,ch0*4/3), ch=cw*3/4;
+  const gx=(W-(cw*L.cols+gap*(L.cols-1)))/2, gy=pad+((H-pad-padB)-(ch*L.rows+gap*(L.rows-1)))/2, cur=Math.min(state.shots.length,n-1);
+  const lv=$('#livefx'), liveSrcCv=(!lv.hidden && lv.width)?lv:null;
+  for(let i=0;i<n;i++){ const cx=gx+(i%L.cols)*(cw+gap), cy=gy+Math.floor(i/L.cols)*(ch+gap);
+    x.save(); roundRect(x,cx,cy,cw,ch,10*dpr); x.fillStyle='#ffffff'; x.fill(); x.clip();
+    const shot=slotShot(i);
+    if(shot && !(i===cur && state.shots.length<n && !state.shots[i])) coverDraw(x,shot,shot.width,shot.height,cx,cy,cw,ch,false);
+    else if(i===cur) { if(liveSrcCv) coverDraw(x,liveSrcCv,liveSrcCv.width,liveSrcCv.height,cx,cy,cw,ch,state.mirror); else coverDraw(x,video,video.videoWidth,video.videoHeight,cx,cy,cw,ch,state.mirror); }
+    else { x.fillStyle='#f1eef4'; x.fillRect(cx,cy,cw,ch); x.fillStyle='#b9b2c2'; x.font=`600 ${Math.round(Math.min(cw,ch)*.22)}px Anuphan, sans-serif`; x.textAlign='center'; x.textBaseline='middle'; x.fillText(i+1,cx+cw/2,cy+ch/2); }
+    x.restore();
+    if(i===cur && state.shots.length<n){ x.save(); x.lineWidth=3*dpr; x.strokeStyle='#ff3d7f'; roundRect(x,cx-2*dpr,cy-2*dpr,cw+4*dpr,ch+4*dpr,12*dpr); x.stroke(); x.restore(); } } }
+requestAnimationFrame(slotLoop);
 function sampleFrame(w,h){ // camera frame (or a soft placeholder when there is no camera), 4:3
   const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d');
   if(stream && video.videoWidth){ const r=Math.max(w/video.videoWidth,h/video.videoHeight), dw=video.videoWidth*r, dh=video.videoHeight*r; x.drawImage(video,(w-dw)/2,(h-dh)/2,dw,dh); }
