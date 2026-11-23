@@ -82,6 +82,7 @@ header{max-width:1240px;margin:0 auto;padding:18px 20px 18px;display:flex;align-
 .brand .spark{width:26px;height:26px;margin-top:-14px}
 .brand .wm{position:relative}
 .brand .by{position:absolute;right:2px;top:100%;margin-top:1px;font-family:"Dancing Script",cursive;font-style:normal;font-weight:600;font-size:13.5px;letter-spacing:.02em;color:var(--muted);white-space:nowrap}
+.brand .by{padding:8px 6px;margin:-8px -6px;cursor:default;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .brand small{font-family:Anuphan,sans-serif;font-style:normal;font-weight:400;color:var(--muted);font-size:12.5px;letter-spacing:0;margin-left:12px;padding-left:12px;border-left:1px solid var(--line);line-height:1.4}
 .steps{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
 .steps b{font-weight:500}.steps b.on{color:var(--ink)}
@@ -2082,10 +2083,10 @@ const OWNER_HASH='adeac42ff69f9de230b4731a4dcf6e33413b971ad657f6cdd90e89a52be602
 function isOwner(){ try{ return localStorage.getItem('cc-owner')===OWNER_HASH; }catch(e){ return false; } }
 async function sha256hex(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
 async function ownerLogin(){
-  if(isOwner()){ if(confirm('เครื่องนี้อยู่ในโหมดเจ้าของแล้ว — ต้องการออกจากโหมดเจ้าของไหม')) try{ localStorage.removeItem('cc-owner'); }catch(e){} return; }
+  if(isOwner()){ if(confirm('เครื่องนี้อยู่ในโหมดเจ้าของแล้ว — ต้องการออกจากโหมดเจ้าของไหม')){ try{ localStorage.removeItem('cc-owner'); }catch(e){} $('#evstats').hidden=true; } return; }
   const k=prompt('ใส่คีย์เจ้าของ'); if(!k) return;
   let h=''; try{ h=await sha256hex(k.trim()); }catch(e){ alert('เบราว์เซอร์นี้ตรวจคีย์ไม่ได้'); return; }
-  if(h===OWNER_HASH){ try{ localStorage.setItem('cc-owner',h); }catch(e){} alert('เปิดโหมดเจ้าของแล้ว ✓ เครื่องนี้จะจำไว้'); } else alert('คีย์ไม่ถูกต้อง');
+  if(h===OWNER_HASH){ try{ localStorage.setItem('cc-owner',h); }catch(e){} alert('เปิดโหมดเจ้าของแล้ว ✓ เครื่องนี้จะจำไว้'); if(typeof loadStats==='function') loadStats(); } else alert('คีย์ไม่ถูกต้อง');
 }
 /* ---- maker (for shops / organisers) ---- */
 const mk={font:'script', built:false, logoUrl:'', logoImg:null};
@@ -2284,6 +2285,8 @@ requestAnimationFrame(liveLoop);
 
 /* ================= INIT ================= */
 visitCounter(); loadStats();
+// secret door: tap the little "by ssp" under the logo 5 times quickly
+{ let taps=0, tm=0; $('.brand .by').addEventListener('click',()=>{ clearTimeout(tm); tm=setTimeout(()=>taps=0,1500); if(++taps>=5){ taps=0; ownerLogin(); } }); }
 $('#bfPrev').onclick=e=>{ e.stopPropagation(); bfScroll(-1); }; $('#bfNext').onclick=e=>{ e.stopPropagation(); bfScroll(1); };
 $('#boothFilters').addEventListener('scroll',bfNav,{passive:true}); addEventListener('resize',bfNav);
 $('#boothFilters').addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){ const el=e.currentTarget; if(el.scrollWidth>el.clientWidth){ el.scrollLeft+=e.deltaY; e.preventDefault(); } } },{passive:false});
