@@ -118,7 +118,11 @@ main{max-width:1240px;margin:0 auto;padding:8px 20px 48px}
 .camshoot span{display:block;width:100%;height:100%;border-radius:50%;background:#fff;transition:transform .15s,border-radius .15s,background .15s}
 .camshoot:active span{transform:scale(.88)}
 .camshoot.busy span{background:var(--accent);border-radius:10px;transform:scale(.5)}
-.camhint{position:absolute;right:16px;bottom:16px;color:rgba(255,255,255,.7);font-size:12px}
+.camhint{display:none}
+.camtimer{position:absolute;left:calc(50% + 52px);bottom:31px;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 13px;border-radius:99px;border:0;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.camtimer b{font-weight:600}.camtimer.off{opacity:.85}
+.cam.full .camtimer{bottom:calc(51px + env(safe-area-inset-bottom));left:calc(50% + 58px)}
+.camshoot.busy~.camtimer{opacity:.4;pointer-events:none}
 .camfull{position:absolute;left:14px;bottom:24px;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:99px;border:0;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font:inherit;font-size:13px;cursor:pointer}
 .cam.full{position:fixed;inset:0;z-index:60;aspect-ratio:auto;max-height:none;min-height:0;width:auto;height:auto;border-radius:0}
 .cam.full video,.cam.full #livefx{object-fit:contain}
@@ -142,6 +146,8 @@ dialog#zoom::backdrop{background:rgba(16,14,20,.92)}
 .zoombtn.adjbtn{right:auto;left:12px}
 .zoombtn.on{background:var(--on);color:var(--on-ink);border-color:var(--on)}
 .btn.adjopen{gap:8px;font-weight:600}
+.tintrow{margin:0 0 10px}.tintrow>span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.sw.orig{background:conic-gradient(#ff7aa8,#f5c518,#4fae5a,#4aa8f0,#9b6be0,#ff7aa8)!important}
 .adjpop{position:absolute;top:58px;left:12px;z-index:3;width:290px;max-height:calc(100% - 70px);display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 44px rgba(0,0,0,.18)}
 .adjpop[hidden]{display:none}
 .adjhead{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 6px 16px;font-size:14px}
@@ -379,6 +385,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
         <div class="flash" id="flash"></div>
         <div class="camhint" id="camHint">แตะจอ หรือกด Space เพื่อถ่าย</div>
         <button class="camshoot" id="camShoot" aria-label="ถ่ายรูป"><span></span></button>
+        <button class="camtimer" id="camTimer" aria-label="ตั้งเวลาถ่าย"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg><b id="camTimerText">3 วิ</b></button>
         <button class="camfull" id="camFull" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><b>เต็มจอ</b></button>
       </div>
       <div class="bfrow" id="bfRow"><button class="bfnav prev" id="bfPrev" aria-label="ฟิลเตอร์ก่อนหน้า"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="bfilters" id="boothFilters"></div><button class="bfnav next" id="bfNext" aria-label="ดูฟิลเตอร์เพิ่ม"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
@@ -387,15 +394,14 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 
     <div class="card side">
       <div class="panels">
+        <button class="ghost" id="uploadBtn" style="margin:0 0 14px">ไม่มีกล้อง? อัปโหลดรูปจากเครื่องแทน</button>
         <div class="sec"><div class="label">เลือกช่อง</div><div class="layouts" id="layoutCards"></div></div>
-        <div class="sec"><div class="label">ตั้งเวลาถ่าย <span>ไม่ตั้ง = กดถ่ายทีละรูปทันที</span></div><div class="seg" id="timerSeg"></div></div>
         <div class="sec"><label class="switch">กลับด้านแบบกระจก<input type="checkbox" id="mirror" checked></label></div>
-        <button class="ghost" id="uploadBtn" style="margin-top:0">ไม่มีกล้อง? อัปโหลดรูปจากเครื่องแทน</button>
         <div class="hint">ถ่ายรูปก่อน แล้วค่อยแต่ง ใส่ฟิลเตอร์ กรอบ และสติ๊กเกอร์ในหน้าถัดไป</div>
       </div>
       <div class="sidefoot">
         <div class="summary" id="summary"></div>
-        <button class="primary" id="shoot"><span class="dot"></span><span id="shootText">เริ่มถ่าย</span></button>
+        <button class="primary" id="shoot" hidden><span class="dot"></span><span id="shootText">เริ่มถ่าย</span></button>
       </div>
       <input type="file" id="file" accept="image/*" multiple hidden>
     </div>
@@ -459,6 +465,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
       <div class="panel" data-panel="sticker" hidden>
         <div class="hscroll" id="stickerCats"></div>
         <div class="chips" id="doodleColors" style="margin-bottom:10px"></div>
+        <div class="tintrow" id="tintRow"><span>เปลี่ยนสีสติ๊กเกอร์ที่เลือก</span><div class="chips" id="tintColors"></div></div>
         <div class="stickers" id="stickerGrid"></div>
         <button class="btn" id="sprinkle" style="width:100%;margin-top:10px">✨ สุ่มโรยรอบรูป</button>
         <div class="hint">ลากเพื่อย้าย • จับปุ่มมุมขวาล่างเพื่อหมุน/ย่อขยาย • มือถือ/iPad ใช้สองนิ้วได้</div>
@@ -657,7 +664,7 @@ const NOTES = [
 ];
 
 // every sticker is drawn in code (no emoji) — see ART_SETS / DOODLES below
-const STICKER_CATS = [['ตัดแปะ','scrap'],['คำอวยพร','greetings'],['แมว','cats'],['หมา','dogs'],['สัตว์อื่นๆ','critters'],['ราศี','zodiac'],['A–Z','letters'],['เทปกาว','tape'],['ดวงดาว','space'],['โน้ต','notes'],['คำฮิต','words'],['มีม','meme'],['Y2K','y2k'],['โคเก็ตต์','coquette'],['เรโทร','retro'],['น่ารัก','cute'],['ดูเดิล','doodle']];
+const STICKER_CATS = [['ตัดแปะ','scrap'],['คำอวยพร','greetings'],['แมว','cats'],['หมา','dogs'],['สัตว์อื่นๆ','critters'],['ราศี','zodiac'],['A–Z น่ารัก','letters'],['A–Z คลาสสิก','lettersC'],['เทปกาว','tape'],['ดวงดาว','space'],['โน้ต','notes'],['คำฮิต','words'],['มีม','meme'],['Y2K','y2k'],['โคเก็ตต์','coquette'],['เรโทร','retro'],['น่ารัก','cute'],['ดูเดิล','doodle']];
 // short trending slang (single words/phrases — not lyrics or quotes, so no copyright issue)
 const WORDS = [
   ['หมดใจยังไงก็ตี๋','thhand'],['ชีเสิร์ฟ','thscript'],['ทำถึง','thhand'],['ทำถึงมาก','thscript'],['ตัวตึง','thhand'],['ตัวแม่','thscript'],
@@ -732,7 +739,9 @@ function buildBoothUI(){
     b.onclick=()=>{ if(state.busy) return; state.layout=k; setOn(lc,b); state.shots=[]; state.clips=[]; state.crops=[]; renderLive(); };
     lc.appendChild(b);
   }
-  seg($('#timerSeg'), TIMERS.map(t=>[t,t?`${t} วิ`:'ไม่ตั้ง']), state.timer, k=>{ state.timer=+k; renderSummary(); renderLive(); });
+  const tLabel=()=>{ $('#camTimerText').textContent=state.timer?`${state.timer} วิ`:'ไม่ตั้ง'; $('#camTimer').classList.toggle('off',!state.timer); };
+  $('#camTimer').onclick=e=>{ e.stopPropagation(); if(state.busy) return; const i=TIMERS.indexOf(state.timer); state.timer=TIMERS[(i+1)%TIMERS.length]; tLabel(); renderSummary(); renderLive(); toast(state.timer?`นับถอยหลัง ${state.timer} วินาที ถ่ายต่อกันอัตโนมัติ`:'ไม่ตั้งเวลา — กดถ่ายทีละรูป'); };
+  tLabel();
   $('#mirror').onchange=e=>{ state.mirror=e.target.checked; video.classList.toggle('mirror',state.mirror); $('#livefx').classList.toggle('mirror',state.mirror); };
   const bf=$('#boothFilters'); FILTER_GROUPS.forEach(g=>{ for(const [k,[name,,,grp]] of Object.entries(FILTERS)){ if(grp!==g) continue;
     const b=document.createElement('button'); b.className='bft'+(k===state.filter?' on':''); b.dataset.k=k; b.innerHTML=`<canvas width="136" height="102"></canvas><span>${name}</span>`;
@@ -1580,7 +1589,7 @@ ART_SETS.space = {
 };
 /* ---- more scrapbook pieces (all drawn here, generic objects, no brands) ---- */
 function paperPiece(c,draw,col){ c.save(); paperShadow(c); draw(); c.fillStyle=col; c.fill(); c.restore(); }
-function tornRect(c,x,y,w,h,seed,edge){ const R=rng(seed), e=edge||.018; c.beginPath(); c.moveTo(x,y);
+function tornPaper(c,x,y,w,h,seed,edge){ const R=rng(seed), e=edge||.018; c.beginPath(); c.moveTo(x,y);
   for(let t=0;t<=1;t+=.05) c.lineTo(x+w*t,y+(R()-.5)*e*2); for(let t=0;t<=1;t+=.05) c.lineTo(x+w+(R()-.5)*e*2,y+h*t);
   for(let t=1;t>=0;t-=.05) c.lineTo(x+w*t,y+h+(R()-.5)*e*2); for(let t=1;t>=0;t-=.05) c.lineTo(x+(R()-.5)*e*2,y+h*t); c.closePath(); }
 Object.assign(ART_SETS.scrap, {
@@ -1608,7 +1617,7 @@ Object.assign(ART_SETS.scrap, {
     paperPiece(c,()=>{ c.beginPath(); c.moveTo(-.34,-.1); c.lineTo(-.2,-.22); c.lineTo(.42,-.22); c.lineTo(.42,.2); c.lineTo(-.2,.2); c.lineTo(-.34,.08); c.closePath(); },'#e7cfa3');
     c.fillStyle='#fff'; circ(c,-.24,-.01,.035); c.fill(); c.strokeStyle='rgba(110,80,40,.35)'; c.lineWidth=.008; for(const y of [-.03,.06,.15]){ c.beginPath(); c.moveTo(-.1,y); c.lineTo(.36,y); c.stroke(); }
     utext(c,'with love',.13,-.1,.085,'700 {s}px "Dancing Script", cursive','#7a4a2a'); c.restore(); },
-  diary:c=>{ c.save(); c.rotate(.05); c.save(); paperShadow(c); tornRect(c,-.4,-.36,.8,.72,7); c.fillStyle='#fffdf6'; c.fill(); c.restore();
+  diary:c=>{ c.save(); c.rotate(.05); c.save(); paperShadow(c); tornPaper(c,-.4,-.36,.8,.72,7); c.fillStyle='#fffdf6'; c.fill(); c.restore();
     c.strokeStyle='rgba(120,160,210,.45)'; c.lineWidth=.008; for(let y=-.22;y<.34;y+=.08){ c.beginPath(); c.moveTo(-.38,y); c.lineTo(.38,y); c.stroke(); }
     c.strokeStyle='rgba(230,110,130,.55)'; c.beginPath(); c.moveTo(-.26,-.36); c.lineTo(-.26,.36); c.stroke();
     utext(c,'dear diary,',-.02,-.26,.075,PEN,'#384a7a'); utext(c,'today was',-.02,-.1,.075,PEN,'#384a7a'); utext(c,'so much fun!',.03,.06,.075,PEN,'#384a7a');
@@ -1642,7 +1651,7 @@ Object.assign(ART_SETS.scrap, {
     c.save(); paperShadow(c); c.beginPath(); wing(1); wing(-1); c.fillStyle='#b9d4f5'; c.fill(); c.restore(); c.save(); c.beginPath(); wing(1); wing(-1); c.clip();
     c.fillStyle='rgba(255,255,255,.55)'; for(const sx of [-1,1]){ dot(c,sx*.25,-.16,.06); dot(c,sx*.19,.2,.04); } c.restore();
     c.fillStyle='#3d3550'; dot(c,0,.02,.025,.2); c.strokeStyle='#3d3550'; c.lineWidth=.012; c.beginPath(); c.moveTo(0,-.16); c.quadraticCurveTo(-.04,-.28,-.1,-.3); c.moveTo(0,-.16); c.quadraticCurveTo(.04,-.28,.1,-.3); c.stroke(); c.restore(); },
-  mapScrap:c=>{ c.save(); c.rotate(-.08); c.save(); paperShadow(c); tornRect(c,-.42,-.32,.84,.64,13,.02); c.fillStyle='#eef2e2'; c.fill(); c.restore(); c.save(); tornRect(c,-.42,-.32,.84,.64,13,.02); c.clip();
+  mapScrap:c=>{ c.save(); c.rotate(-.08); c.save(); paperShadow(c); tornPaper(c,-.42,-.32,.84,.64,13,.02); c.fillStyle='#eef2e2'; c.fill(); c.restore(); c.save(); tornPaper(c,-.42,-.32,.84,.64,13,.02); c.clip();
     c.fillStyle='#cfe3ee'; c.beginPath(); c.moveTo(-.42,.1); c.bezierCurveTo(-.2,0,-.1,.3,.1,.2); c.bezierCurveTo(.25,.12,.3,.34,.45,.3); c.lineTo(.45,.4); c.lineTo(-.45,.4); c.closePath(); c.fill();
     c.strokeStyle='rgba(150,140,110,.4)'; c.lineWidth=.008; for(let i=0;i<5;i++){ c.beginPath(); c.moveTo(-.42,-.25+i*.08); c.bezierCurveTo(-.1,-.3+i*.08,.1,-.18+i*.08,.42,-.24+i*.08); c.stroke(); } c.restore();
     c.save(); c.setLineDash([.03,.02]); c.strokeStyle='#e0566f'; c.lineWidth=.014; c.beginPath(); c.moveTo(-.3,.16); c.bezierCurveTo(-.2,-.2,.1,0,.22,-.16); c.stroke(); c.restore();
@@ -1881,7 +1890,7 @@ function budgie(c,body,face){ for(const pass of [0,1]){ PP(c,pass,()=>{ c.beginP
 ART_SETS.cats={}; CATS.forEach(([k,o])=>{ ART_SETS.cats[k+'Face']=c=>{ for(const pass of [0,1]){ c.save(); c.translate(0,.06); catHead(c,pass,o); c.restore(); } }; ART_SETS.cats[k+'Body']=c=>{ for(const pass of [0,1]) catBody(c,pass,o); }; });
 ART_SETS.dogs={}; DOGS.forEach(([k,o])=>{ ART_SETS.dogs[k+'Face']=c=>{ for(const pass of [0,1]){ c.save(); c.translate(0,.06); dogHead(c,pass,o); c.restore(); } }; ART_SETS.dogs[k+'Body']=c=>{ for(const pass of [0,1]) dogBody(c,pass,o); }; });
 ART_SETS.critters=OTHER;
-/* ---- zodiac (ราศี) + ascendant (ลัคนา): glyphs drawn as strokes, never font/emoji glyphs ---- */
+/* ---- zodiac (ราศี) + ascendant (ลัคนา): fine-line constellations (stars joined by thin lines) and thin glyphs ---- */
 const ZG={
   aries:c=>{ c.moveTo(0,.3); c.lineTo(0,-.04); c.bezierCurveTo(-.03,-.36,-.36,-.38,-.3,-.1); c.moveTo(0,-.04); c.bezierCurveTo(.03,-.36,.36,-.38,.3,-.1); },
   taurus:c=>{ c.moveTo(.17,.12); c.arc(0,.12,.17,0,Math.PI*2); c.moveTo(-.3,-.3); c.quadraticCurveTo(-.26,-.04,0,-.05); c.quadraticCurveTo(.26,-.04,.3,-.3); },
@@ -1898,27 +1907,41 @@ const ZG={
   aquarius:c=>{ for(const y of [-.08,.1]){ c.moveTo(-.3,y+.05); for(let i=1;i<=4;i++) c.lineTo(-.3+i*.15,y+(i%2?-.06:.05)); } },
   pisces:c=>{ c.moveTo(-.24,-.3); c.quadraticCurveTo(-.04,0,-.24,.3); c.moveTo(.24,-.3); c.quadraticCurveTo(.04,0,.24,.3); c.moveTo(-.2,0); c.lineTo(.2,0); },
 };
-const ZODIAC=[ // key, Thai name, element colours [badge, glyph]
-  ['aries','เมษ','fire'],['taurus','พฤษภ','earth'],['gemini','เมถุน','air'],['cancer','กรกฎ','water'],['leo','สิงห์','fire'],['virgo','กันย์','earth'],
-  ['libra','ตุลย์','air'],['scorpio','พิจิก','water'],['sagittarius','ธนู','fire'],['capricorn','มังกร','earth'],['aquarius','กุมภ์','air'],['pisces','มีน','water']];
-const ZEL={fire:['#ffd0c8','#d9485f'],earth:['#d8ecc8','#4f7f3e'],air:['#fff0b8','#b88a1c'],water:['#cfe3ff','#3f69b0']};
-function zGlyph(c,k,col,w){ c.beginPath(); ZG[k](c); c.lineCap=c.lineJoin='round'; c.strokeStyle=col; c.lineWidth=w; c.stroke(); }
-function goldGrad(c){ const g=c.createLinearGradient(-.35,-.35,.35,.35); g.addColorStop(0,'#fff1a8'); g.addColorStop(.5,'#e3b445'); g.addColorStop(1,'#b8862a'); return g; }
+// simplified star patterns: [stars [x,y,bright]], [lines as index pairs]
+const ZSTAR={
+  aries:[[[-.36,.12,1],[-.06,-.06,2],[.16,-.12,1],[.3,-.04,0]],[[0,1],[1,2],[2,3]]],
+  taurus:[[[-.34,-.3,1],[-.12,-.06,0],[0,.04,2],[.1,-.06,0],[.36,-.32,1],[.04,.24,0],[-.14,.3,0]],[[0,1],[1,2],[2,3],[3,4],[2,5],[5,6]]],
+  gemini:[[[-.16,-.36,2],[-.2,-.04,0],[-.26,.32,1],[.1,-.34,2],[.12,-.02,0],[.16,.34,1],[-.34,.12,0],[.3,.12,0]],[[0,1],[1,2],[3,4],[4,5],[0,3],[1,6],[4,7]]],
+  cancer:[[[0,-.02,1],[0,-.32,0],[-.26,.3,1],[.26,.28,0],[-.06,.12,0]],[[0,1],[0,4],[4,2],[0,3]]],
+  leo:[[[-.34,.16,1],[-.06,.22,0],[.18,.16,2],[.3,-.04,0],[.2,-.24,1],[.04,-.3,0],[-.08,-.18,0]],[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]],
+  virgo:[[[-.34,-.22,0],[-.14,-.1,1],[.04,-.02,0],[.2,.12,2],[.34,.3,0],[-.02,.22,0],[.24,-.2,1],[-.26,.1,0]],[[0,1],[1,2],[2,3],[3,4],[2,5],[2,6],[1,7]]],
+  libra:[[[0,-.32,2],[-.26,-.06,1],[.26,-.04,1],[-.2,.26,0],[.22,.3,0]],[[0,1],[0,2],[1,2],[1,3],[2,4]]],
+  scorpio:[[[-.36,-.3,0],[-.26,-.18,0],[-.12,-.08,2],[0,.06,0],[.04,.2,0],[.14,.3,0],[.3,.28,1],[.36,.14,0],[-.38,-.12,0]],[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[1,8]]],
+  sagittarius:[[[-.26,.02,1],[-.1,-.14,0],[.1,-.14,2],[.26,.02,0],[.1,.16,0],[-.1,.16,1],[.02,-.32,0],[.36,-.12,0]],[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[1,6],[6,2],[3,7]]],
+  capricorn:[[[-.36,-.16,1],[-.1,-.18,0],[.36,-.22,2],[.14,.24,0],[-.14,.2,1]],[[0,1],[1,2],[2,3],[3,4],[4,0]]],
+  aquarius:[[[-.36,-.1,0],[-.2,-.22,1],[-.04,-.08,0],[.1,-.2,2],[.24,-.02,0],[.06,.14,0],[.2,.3,1],[-.2,.24,0]],[[0,1],[1,2],[2,3],[3,4],[3,5],[5,6],[5,7]]],
+  pisces:[[[-.36,-.32,1],[-.24,-.12,0],[-.08,.08,0],[0,.26,2],[.16,.12,0],[.3,0,0],[.36,-.1,1],[-.42,-.4,0]],[[7,0],[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]]],
+};
+const ZODIAC=[['aries','เมษ','ARIES'],['taurus','พฤษภ','TAURUS'],['gemini','เมถุน','GEMINI'],['cancer','กรกฎ','CANCER'],['leo','สิงห์','LEO'],['virgo','กันย์','VIRGO'],
+  ['libra','ตุลย์','LIBRA'],['scorpio','พิจิก','SCORPIO'],['sagittarius','ธนู','SAGITTARIUS'],['capricorn','มังกร','CAPRICORN'],['aquarius','กุมภ์','AQUARIUS'],['pisces','มีน','PISCES']];
+const Z_INK='#243259', Z_GOLD='#c9a14a';
+function zLine(c,draw,w,col){ c.save(); c.lineCap=c.lineJoin='round'; c.beginPath(); draw(); c.strokeStyle='rgba(255,255,255,.95)'; c.lineWidth=w*3; c.stroke(); c.beginPath(); draw(); c.strokeStyle=col; c.lineWidth=w; c.stroke(); c.restore(); }
+function zStar(c,x,y,b){ const r=[.022,.03,.042][b]; c.save(); sparkleP(c,x,y,r*1.9); c.fillStyle='#fff'; c.fill(); sparkleP(c,x,y,r*1.25); c.fillStyle=Z_GOLD; c.fill(); c.fillStyle='#fff'; dot(c,x,y,r*.28); c.restore(); }
+function zConst(c,k){ const [st,ln]=ZSTAR[k]; zLine(c,()=>{ for(const [a,b] of ln){ c.moveTo(st[a][0],st[a][1]); c.lineTo(st[b][0],st[b][1]); } },.008,Z_INK); for(const [x,y,b] of st) zStar(c,x,y,b); }
 ART_SETS.zodiac={};
-ZODIAC.forEach(([k,th,el])=>{ const [bg,ink]=ZEL[el];
-  ART_SETS.zodiac['z_'+k]=c=>{ sInk(c,()=>circ(c,0,0,.44),bg); c.save(); c.translate(0,-.06); c.scale(.72,.72); zGlyph(c,k,ink,.075); c.restore();
-    utext(c,th,0,.29,.12,'700 {s}px Anuphan, sans-serif',ink); c.fillStyle='#fff'; sparkleP(c,.27,-.28,.05); c.fill(); };
-  ART_SETS.zodiac['zg_'+k]=c=>{ zGlyph(c,k,'#fff',.2); zGlyph(c,k,SL,.12); zGlyph(c,k,goldGrad(c),.08); }; });
+ZODIAC.forEach(([k,th,en])=>{
+  ART_SETS.zodiac['zc_'+k]=c=>{ c.save(); c.translate(0,-.08); c.scale(.82,.82); zConst(c,k); c.restore();
+    gText(c,en,GSER,.075,Z_INK,.33,.8,.3); gText(c,th,GCAP,.06,Z_GOLD,.43,.5); };
+  ART_SETS.zodiac['zl_'+k]=c=>{ zLine(c,()=>circ(c,0,0,.4),.008,Z_INK); c.save(); c.translate(0,-.05); c.scale(.6,.6); zLine(c,()=>ZG[k](c),.022,Z_INK); c.restore();
+    gText(c,th,GCAP,.065,Z_INK,.25,.4); zStar(c,0,-.4,1); }; });
 Object.assign(ART_SETS.zodiac,{
-  lagna:c=>{ sInk(c,()=>roundRect(c,-.44,-.18,.88,.36,.18),'#2c2547'); utext(c,'ลัคนา',-.05,.0,.17,'700 {s}px Anuphan, sans-serif','#f6d77a');
-    c.fillStyle='#f6d77a'; sparkleP(c,.31,-.03,.07); c.fill(); sparkleP(c,-.33,.05,.04); c.fill(); },
-  lagnaRise:c=>{ sInk(c,()=>circ(c,0,0,.42),'#2c2547'); c.save(); c.beginPath(); c.arc(0,.12,.2,Math.PI,0); c.closePath(); c.fillStyle='#f6c86a'; c.fill(); c.restore();
-    c.strokeStyle='#f6d77a'; c.lineWidth=.03; c.lineCap='round'; c.beginPath(); c.moveTo(-.3,.12); c.lineTo(.3,.12); for(const a of [-2.6,-2.1,-1.57,-1.05,-.55]){ c.moveTo(Math.cos(a)*.25,.12+Math.sin(a)*.25); c.lineTo(Math.cos(a)*.32,.12+Math.sin(a)*.32); } c.stroke();
-    utext(c,'RISING',0,.27,.08,'800 {s}px Anuphan, sans-serif','#f6d77a'); },
-  duangPang:c=>{ sInk(c,()=>{ star5(c,0,0,.46,.62); },'#fff3b0'); utext(c,'ดวงปัง',0,.02,.15,'800 {s}px Anuphan, sans-serif','#b0405e'); },
-  sunSign:c=>{ sInk(c,()=>circ(c,0,0,.3),'#ffd36a'); c.strokeStyle=SL; c.lineWidth=.03; c.lineCap='round'; c.beginPath(); for(let i=0;i<8;i++){ const a=i/8*Math.PI*2; c.moveTo(Math.cos(a)*.36,Math.sin(a)*.36); c.lineTo(Math.cos(a)*.46,Math.sin(a)*.46); } c.stroke();
-    c.fillStyle=SL; dot(c,0,0,.05); c.strokeStyle=SL; c.lineWidth=.025; circ(c,0,0,.16); c.stroke(); },
-  moonSign:c=>{ sInk(c,()=>crescentPath(c,0,0,.42,.2,-.14,.36),'#e9e4ff'); c.fillStyle='#c9b8ff'; sparkleP(c,.28,.24,.07); c.fill(); sparkleP(c,.34,-.26,.045); c.fill(); },
+  lagna:c=>{ zLine(c,()=>{ c.moveTo(-.4,.06); c.lineTo(-.1,.06); c.moveTo(.1,.06); c.lineTo(.4,.06); },.008,Z_INK); gText(c,'ลัคนา',GTH,.17,Z_INK,-.08,.6); gText(c,'ASCENDANT',GSER,.06,Z_GOLD,.16,.6,.35); zStar(c,0,.06,1); },
+  lagnaRise:c=>{ zLine(c,()=>{ c.arc(0,.12,.24,Math.PI,0); c.moveTo(-.4,.12); c.lineTo(.4,.12); for(const a of [-2.6,-2.1,-1.57,-1.05,-.55]){ c.moveTo(Math.cos(a)*.3,.12+Math.sin(a)*.3); c.lineTo(Math.cos(a)*.37,.12+Math.sin(a)*.37); } },.01,Z_INK);
+    gText(c,'RISING SIGN',GSER,.07,Z_INK,.27,.7,.3); },
+  sunSign:c=>{ zLine(c,()=>{ circ(c,0,0,.2); for(let i=0;i<12;i++){ const a=i/12*Math.PI*2; c.moveTo(Math.cos(a)*.27,Math.sin(a)*.27); c.lineTo(Math.cos(a)*(i%2?.33:.4),Math.sin(a)*(i%2?.33:.4)); } },.012,Z_INK); c.fillStyle=Z_GOLD; dot(c,0,0,.035); },
+  moonSign:c=>{ zLine(c,()=>crescentPath(c,0,0,.36,.2,-.12,.3),.012,Z_INK); zStar(c,.26,.22,1); zStar(c,.34,-.22,0); zStar(c,.14,-.02,0); },
+  starMap:c=>{ zLine(c,()=>{ circ(c,0,0,.42); circ(c,0,0,.3); for(let i=0;i<12;i++){ const a=i/12*Math.PI*2; c.moveTo(Math.cos(a)*.3,Math.sin(a)*.3); c.lineTo(Math.cos(a)*.42,Math.sin(a)*.42); } },.007,Z_INK);
+    for(const [x,y,b] of [[-.12,-.1,2],[.08,-.16,0],[.14,.06,1],[-.04,.12,0],[-.16,.06,0]]) zStar(c,x,y,b); zLine(c,()=>{ c.moveTo(-.12,-.1); c.lineTo(.08,-.16); c.lineTo(.14,.06); c.lineTo(-.04,.12); c.lineTo(-.16,.06); },.006,Z_INK); },
 });
 /* ---- A–Z letters: each letter gets its own cute style (bubble, badge, paper cut-out, heart, cloud, tile, gingham) ---- */
 function letterInk(c,ch,font,sz,fill,y){ c.save(); c.scale(.01,.01); c.font=font.replace('{s}',Math.round(sz*100)); c.textAlign='center'; c.textBaseline='middle'; c.lineJoin='round';
@@ -1927,7 +1950,7 @@ const LT_COLS=['#ffb3c8','#b9d4f5','#c9b8ff','#ffe28a','#a8e0c4','#ffc9a0','#f6a
 const LT_STYLES=[
   (c,ch,col)=>{ letterInk(c,ch,'800 {s}px Anuphan, sans-serif',.78,col,.03); c.fillStyle='#fff'; sparkleP(c,.32,-.3,.07); c.fill(); },                                  // bubble
   (c,ch,col)=>{ sInk(c,()=>circ(c,0,0,.42),col); utext(c,ch,0,.03,.56,'700 {s}px "Instrument Serif", serif',SL); },                                                   // round badge
-  (c,ch,col)=>{ const R=rng(ch.charCodeAt(0)); c.save(); c.rotate((R()-.5)*.3); c.save(); paperShadow(c); tornRect(c,-.34,-.38,.68,.76,ch.charCodeAt(0),.02); c.fillStyle=R()<.5?'#fffaf0':col; c.fill(); c.restore();
+  (c,ch,col)=>{ const R=rng(ch.charCodeAt(0)); c.save(); c.rotate((R()-.5)*.3); c.save(); paperShadow(c); tornPaper(c,-.34,-.38,.68,.76,ch.charCodeAt(0),.02); c.fillStyle=R()<.5?'#fffaf0':col; c.fill(); c.restore();
       utext(c,ch,0,.04,.62,R()<.5?'700 {s}px "Special Elite", monospace':'900 {s}px Georgia, serif',R()<.5?SL:'#c0405e'); c.restore(); },                           // paper cut-out
   (c,ch,col)=>{ sInk(c,()=>heartP(c,0,-.04,.46),col); utext(c,ch,0,.0,.42,'800 {s}px Anuphan, sans-serif','#fff'); },                                                  // heart
   (c,ch,col)=>{ sInk(c,()=>{ c.beginPath(); c.moveTo(-.34,.2); c.bezierCurveTo(-.5,.2,-.5,-.06,-.3,-.06); c.bezierCurveTo(-.28,-.3,.04,-.34,.1,-.14); c.bezierCurveTo(.2,-.28,.46,-.2,.4,.0); c.bezierCurveTo(.52,.04,.5,.22,.34,.22); c.closePath(); },'#ffffff');
@@ -1980,6 +2003,18 @@ ART_SETS.greetings={
   gBaby:c=>{ gText(c,'welcome',GSERI,.14,'#6a8fb8',-.18); gText(c,'Little One',GSB,.25,'#6a8fb8',.04); gSpark(c,.36,-.22,.035,'#f2c14e'); gDots(c,.25,3,'#f2a7b8'); },
   gLove:c=>{ gText(c,'with love',GSB,.27,G_ROSE,-.02); gHeart(c,.38,-.14,.04,G_ROSE); },
 };
+/* ---- classic A–Z: serif / italic / script capitals, monogram rings and fine frames in deep inks ---- */
+const LC_INK=['#243259','#7a2336','#2b2326','#9a7430','#2f5a46'];
+const LC_STYLES=[
+  (c,ch,col)=>gText(c,ch,GSER,.78,col,.03,.9),
+  (c,ch,col)=>gText(c,ch,GSERI,.78,col,.03,.9),
+  (c,ch,col)=>{ zLine(c,()=>{ circ(c,0,0,.4); circ(c,0,0,.35); },.008,col); gText(c,ch,GSER,.5,col,.03,.6); for(const a of [0,Math.PI]){ c.fillStyle=col; dot(c,Math.cos(a)*.375,Math.sin(a)*.375,.018); } },
+  (c,ch,col)=>gText(c,ch,GSB,.7,col,.0,.9),
+  (c,ch,col)=>{ zLine(c,()=>{ c.rect(-.33,-.36,.66,.72); for(const [x,y,dx,dy] of [[-.38,-.41,1,1],[.38,-.41,-1,1],[-.38,.41,1,-1],[.38,.41,-1,-1]]){ c.moveTo(x+dx*.1,y); c.lineTo(x,y); c.lineTo(x,y+dy*.1); } },.008,col); gText(c,ch,GSER,.5,col,.02,.6); },
+  (c,ch,col)=>{ gText(c,ch,GSER,.66,col,-.04,.9); zLine(c,()=>{ c.moveTo(-.24,.34); c.lineTo(.24,.34); },.01,col); c.save(); sparkleP(c,.3,.34,.05); c.fillStyle='#fff'; c.fill(); sparkleP(c,.3,.34,.032); c.fillStyle='#c9a14a'; c.fill(); c.restore(); },
+];
+ART_SETS.lettersC={};
+'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((ch,i)=>{ const st=LC_STYLES[(i*7+2)%LC_STYLES.length], col=LC_INK[(i*2+Math.floor(i/6))%LC_INK.length]; ART_SETS.lettersC['LC_'+ch]=c=>st(c,ch,col); });
 const ART = Object.assign({}, ...Object.values(ART_SETS));
 const artIcons={};
 function artIcon(k){ if(artIcons[k]) return artIcons[k]; const cv=document.createElement('canvas'); cv.width=cv.height=112; const c=cv.getContext('2d');
@@ -2270,10 +2305,23 @@ function toLocal(o,px,py){ const dx=px-o.x, dy=py-o.y, c=Math.cos(-o.rot), s=Mat
 function hit(o,p){ const {w,h}=objSize(o), l=toLocal(o,p.x,p.y); return Math.abs(l.x)<=w/2 && Math.abs(l.y)<=h/2; }
 function handlePos(o,which,k){ const {w,h}=objSize(o), pad=6*k, lx=w/2+pad, ly= which==='del' ? -(h/2+pad) : h/2+pad, c=Math.cos(o.rot), s=Math.sin(o.rot);
   return {x:o.x+lx*c-ly*s, y:o.y+lx*s+ly*c}; }
+const TINTS=['#ff7aa8','#e0404f','#ff9a3c','#f5c518','#4fae5a','#5fd1b5','#4aa8f0','#2d4a8a','#9b6be0','#9a6a44','#2b2b2b'];
+const tintCache=new Map();
+function hexHsl(hex){ let [r,g,b]=hexRgb(hex).map(v=>v/255); const mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2; let h=0,s=0;
+  if(mx!==mn){ const d=mx-mn; s=l>.5?d/(2-mx-mn):d/(mx+mn); h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4; h/=6; } return [h,s,l]; }
+function hslRgb(h,s,l){ if(!s) return [l,l,l]; const q=l<.5?l*(1+s):l+s-l*s, p=2*l-q, f=t=>{ t=(t+1)%1; return t<1/6?p+(q-p)*6*t:t<.5?q:t<2/3?p+(q-p)*(2/3-t)*6:p; }; return [f(h+1/3),f(h),f(h-1/3)]; }
+function tintedArt(kind,tint,px){ const S=Math.max(64,Math.min(1200,Math.ceil(px*1.4/64)*64)), key=kind+'|'+tint+'|'+S; if(tintCache.has(key)) return tintCache.get(key);
+  const cv=document.createElement('canvas'); cv.width=cv.height=S; const x=cv.getContext('2d',{willReadFrequently:true}); x.translate(S/2,S/2); x.scale(S/1.4,S/1.4); (ART[kind]||(()=>{}))(x);
+  const im=x.getImageData(0,0,S,S), d=im.data, [th,ts,tl]=hexHsl(tint), mono=ts<.12;
+  for(let i=0;i<d.length;i+=4){ if(!d[i+3]) continue; const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255, mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2, sat=mx===mn?0:(mx-mn)/(1-Math.abs(2*l-1));
+    if(sat<.18 || l>.93 || l<.12) continue; // white edges, dark outlines, greys stay
+    const nl=mono?l*.35:Math.min(.92,Math.max(.12,l+(tl-.55)*.5)), [R,G,B]=hslRgb(th,mono?0:Math.max(.35,Math.min(1,ts*.85+sat*.15)),nl);
+    d[i]=R*255; d[i+1]=G*255; d[i+2]=B*255; }
+  x.putImageData(im,0,0); if(tintCache.size>80) tintCache.delete(tintCache.keys().next().value); tintCache.set(key,cv); return cv; }
 function drawObj(c,o){
   if(o.type==='photo') return drawPhotoObj(c,o);
   c.save(); c.translate(o.x,o.y); c.rotate(o.rot); c.textAlign='center'; c.textBaseline='middle';
-  if(o.type==='art'){ c.scale(o.size,o.size); (ART[o.kind]||(()=>{}))(c); }
+  if(o.type==='art'){ if(o.tint){ const t=tintedArt(o.kind,o.tint,o.size*(c.getTransform?Math.hypot(c.getTransform().a,c.getTransform().b):1)); c.drawImage(t,-o.size*.7,-o.size*.7,o.size*1.4,o.size*1.4); } else { c.scale(o.size,o.size); (ART[o.kind]||(()=>{}))(c); } }
   else if(o.type==='doodle'){ c.scale(o.size,o.size); c.lineWidth=.06; c.lineCap=c.lineJoin='round'; c.strokeStyle=c.fillStyle=o.color;
     c.shadowColor='rgba(0,0,0,.22)'; c.shadowBlur=4; DOODLES[o.kind](c); }
   else{
@@ -2422,6 +2470,8 @@ function buildEditorUI(){
   const cats=$('#stickerCats');
   STICKER_CATS.forEach(([label,cat])=>{ const b=chip(label, cat===ed.cat, ()=>{ ed.cat=cat; setOn(cats,b); renderStickerGrid(); }); cats.appendChild(b); });
   swatches($('#doodleColors'), DOODLE_COLORS, ed.doodleColor, col=>{ ed.doodleColor=col; applyToSel('doodle',{color:col}); });
+  swatches($('#tintColors'), ['orig',...TINTS], null, col=>{ if(ed.sel?.type!=='art'){ toast('แตะเลือกสติ๊กเกอร์บนรูปก่อน แล้วค่อยเลือกสี'); return; } applyToSel('art',{tint:col==='orig'?null:col}); });
+  { const o=$('#tintColors').firstChild; if(o){ o.classList.add('orig'); o.setAttribute('aria-label','สีเดิม'); o.title='สีเดิม'; } }
   renderStickerGrid();
   $('#sprinkle').onclick=sprinkle;
   // text
@@ -2454,7 +2504,7 @@ function getDoodleIcons(){ if(doodleIcons) return doodleIcons; doodleIcons={};
   return doodleIcons; }
 function renderStickerGrid(){
   const g=$('#stickerGrid'), cat=ed.cat; g.innerHTML='';
-  $('#doodleColors').hidden = cat!=='doodle';
+  $('#doodleColors').hidden = cat!=='doodle'; $('#tintRow').hidden = cat==='doodle';
   if(cat==='doodle'){ const icons=getDoodleIcons();
     Object.keys(DOODLES).forEach(k=>{ const b=document.createElement('button'); b.innerHTML=`<img src="${icons[k]}" alt="">`; b.onclick=()=>{ addDoodle(k); commit(); render(); }; g.appendChild(b); }); }
   else if(cat==='words'){
@@ -2816,9 +2866,10 @@ if(new URLSearchParams(location.search).has('maker')) openMaker();
 if(new URLSearchParams(location.search).has('owner')){ history.replaceState(null,'',location.pathname); setTimeout(ownerLogin,300); }
 document.querySelectorAll('[data-deco]').forEach(im=>im.src=artIcon(im.dataset.deco));$('#shoot').onclick=()=>{ if(!state.busy && stream && video.videoWidth) camFullSet(true); shoot(); };
 $('#camFull').onclick=e=>{ e.stopPropagation(); camFullSet(!$('#cam').classList.contains('full')); };
-$('#camShoot').onclick=e=>{ e.stopPropagation(); shoot(); };
+const shootFull=()=>{ if(!state.busy && stream && video.videoWidth) camFullSet(true); shoot(); };
+$('#camShoot').onclick=e=>{ e.stopPropagation(); shootFull(); };
 $('#camFlip').onclick=e=>{ e.stopPropagation(); flipCam(); };
-$('#cam').addEventListener('click', e=>{ if(e.target.closest('button') || !$('#camMsg').hidden || state.busy) return; shoot(); });
+$('#cam').addEventListener('click', e=>{ if(e.target.closest('button') || !$('#camMsg').hidden || state.busy) return; shootFull(); });
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape' && $('#cam').classList.contains('full') && !state.busy){ camFullSet(false); return; }
   if($('#booth').hidden || ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
