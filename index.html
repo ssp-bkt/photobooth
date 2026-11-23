@@ -258,7 +258,7 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .about{margin:32px auto 0;max-width:720px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.7}
 .about h1{font-size:16px;font-weight:600;color:var(--ink2);margin:0 0 6px}
 .about p{margin:0 0 6px}
-.stats{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;margin:16px 0 0}.stats span{background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12.5px}.stats b{color:var(--ink);font-weight:600}
+.stats{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;margin:16px 0 0}.stats span{background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12.5px}.stats b{color:var(--ink);font-weight:600}.evstats{margin-top:8px}.evstats .evlabel{background:var(--ink);color:var(--surface);border-color:transparent}
 .support{display:flex;align-items:center;gap:16px;width:max-content;max-width:100%;box-sizing:border-box;margin:18px auto 0;padding:12px 18px 12px 12px;border-radius:20px;background:var(--surface);border:1px solid rgba(0,0,0,.06);text-align:left}
 .support img{width:116px;height:116px;flex:none;border-radius:10px}
 .support b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:2px}.support span{display:block;font-size:12.5px;line-height:1.6}.support i{font-style:normal;white-space:nowrap}
@@ -456,6 +456,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
     <p>รูปทั้งหมดประมวลผลในเครื่องของคุณ ไม่มีการอัปโหลดรูปขึ้นเซิร์ฟเวอร์</p>
     <button class="btn" id="openMaker" style="margin-top:10px">✦ สำหรับร้านค้า / อีเวนต์ — สร้างลิงก์และ QR เฉพาะงาน</button>
     <div class="stats" id="stats" hidden><span>ถ่ายไปแล้ว <b id="stat-shots">0</b> ครั้ง</span><span>เซฟรูป <b id="stat-saves">0</b> ครั้ง</span><span>บันทึก PDF <b id="stat-pdfs">0</b> ครั้ง</span></div>
+    <div class="stats evstats" id="evstats" hidden><span class="evlabel">งานอีเวนต์ (เห็นเฉพาะเจ้าของ)</span><span>สร้างแล้ว <b id="stat-ev-made">0</b> งาน</span><span>แขกเปิดลิงก์ <b id="stat-ev-visits">0</b> ครั้ง</span><span>ถ่าย <b id="stat-ev-shots">0</b> ครั้ง</span><span>เซฟรูป <b id="stat-ev-saves">0</b> ครั้ง</span><span>PDF <b id="stat-ev-pdfs">0</b> ครั้ง</span></div>
     <div class="support" id="support">
       <img id="supportQR" src="donate-qr.png" width="353" height="353" alt="QR พร้อมเพย์ สนับสนุนผู้สร้าง" loading="lazy">
       <div><b>สนับสนุนผู้สร้าง ✦</b><span><i>ชอบ chaechae ไหม</i> <i>ใช้ฟรีได้เสมอ</i><br><i>อยากเลี้ยงขนมคนทำ</i> <i>สแกนด้วยแอปธนาคารได้เลย</i></span></div>
@@ -2108,9 +2109,9 @@ function buildMaker(){
   $('#mkPrev').title='แตะเพื่อขยายดู'; $('#mkPrev').onclick=()=>{ const c=mkCfg(), keep=state.layout; state.layout=c.l; const F=FRAMES.find(f=>f.id===c.f), S=SHAPES.find(q=>q.id===c.sh), d=dims(F), cv=document.createElement('canvas'); cv.width=d.W; cv.height=d.H;
     drawBase(cv.getContext('2d'),{...d,F,S,imgs:[],title:c.n||'ชื่องานของคุณ',titleFont:c.ft,subtitle:c.s,logo:mk.logoImg,date:'',photos:d.collage?presetPhotos(d.collage):null}); state.layout=keep; openZoom(cv); };
   $('#mkAgree').addEventListener('change',mkUpdate);
-  $('#mkCopy').onclick=async()=>{ const b=$('#mkCopy'); try{ await navigator.clipboard.writeText($('#mkLink').value); }catch(e){ $('#mkLink').select(); document.execCommand('copy'); } b.textContent='คัดลอกแล้ว ✓'; setTimeout(()=>b.textContent='คัดลอกลิงก์',1600); };
-  $('#mkOpen').onclick=()=>window.open($('#mkLink').value,'_blank','noopener');
-  $('#mkCard').onclick=downloadQRCard;
+  $('#mkCopy').onclick=async()=>{ tallyEventMade($('#mkLink').value); const b=$('#mkCopy'); try{ await navigator.clipboard.writeText($('#mkLink').value); }catch(e){ $('#mkLink').select(); document.execCommand('copy'); } b.textContent='คัดลอกแล้ว ✓'; setTimeout(()=>b.textContent='คัดลอกลิงก์',1600); };
+  $('#mkOpen').onclick=()=>{ tallyEventMade($('#mkLink').value); window.open($('#mkLink').value,'_blank','noopener'); };
+  $('#mkCard').onclick=()=>{ tallyEventMade($('#mkLink').value); downloadQRCard(); };
 }
 let mkQRToken=0;
 async function mkUpdate(){
@@ -2151,16 +2152,25 @@ async function downloadQRCard(){
 /* ---- visit counter (free Abacus counter; counts once per browser session, only on the live site) ---- */
 const COUNT_URL='https://abacus.jasoncameron.dev', COUNT_NS='chaechae-photobooth', countLive=()=>/github\.io$/.test(location.hostname) && !isOwner();
 const STAT_KEYS=['shots','saves','pdfs'];
+function cfetch(u){ const ac=new AbortController(); setTimeout(()=>ac.abort(),8000); return fetch(u,{signal:ac.signal}); } // counter service can hang; never wait long
+function hit(key,cb){ cfetch(`${COUNT_URL}/hit/${COUNT_NS}/${key}`).then(r=>r.ok&&r.json()).then(j=>{ if(j && typeof j.value==='number' && cb) cb(j.value); }).catch(()=>{}); }
 function tally(key){ if(!countLive()) return; // one event = +1, fire and forget
-  fetch(`${COUNT_URL}/hit/${COUNT_NS}/${key}`).then(r=>r.ok&&r.json()).then(j=>{ if(j && typeof j.value==='number') showStat(key,j.value); }).catch(()=>{}); }
-function showStat(key,v){ const el=$(`#stat-${key}`); if(!el) return; el.textContent=v.toLocaleString('th-TH'); $('#stats').hidden=false; }
-async function loadStats(){ await Promise.all(STAT_KEYS.map(async k=>{ try{ const r=await fetch(`${COUNT_URL}/get/${COUNT_NS}/${k}`); const j=r.ok?await r.json():{value:0}; showStat(k, typeof j.value==='number'?j.value:0); }catch(e){} })); }
+  hit(key,v=>showStat(key,v));
+  if(typeof EVENT!=='undefined' && EVENT) hit('ev-'+key,v=>showStat('ev-'+key,v)); } // also counted separately when it came from an event link
+// an event link counts as "made" the first time it is copied, opened or turned into a QR card (once per link per browser)
+function tallyEventMade(link){ if(!/github\.io$/.test(location.hostname)) return; let seen=[]; try{ seen=JSON.parse(localStorage.getItem('cc-made')||'[]'); }catch(e){}
+  const k=link.slice(-60); if(seen.includes(k)) return; seen.push(k); try{ localStorage.setItem('cc-made',JSON.stringify(seen.slice(-50))); }catch(e){}
+  hit('ev-made',v=>showStat('ev-made',v)); }
+function showStat(key,v){ const el=$(`#stat-${key}`); if(!el) return; el.textContent=v.toLocaleString('th-TH'); if(key.startsWith('ev-')) $('#evstats').hidden=!isOwner(); else $('#stats').hidden=false; }
+async function loadStats(){ const keys=STAT_KEYS.concat(isOwner()?['ev-made','ev-visits','ev-shots','ev-saves','ev-pdfs']:[]);
+  await Promise.all(keys.map(async k=>{ try{ const r=await cfetch(`${COUNT_URL}/get/${COUNT_NS}/${k}`); const j=r.ok?await r.json():{value:0}; showStat(k, typeof j.value==='number'?j.value:0); }catch(e){} })); }
 async function visitCounter(){
   const live=/github\.io$/.test(location.hostname), url='https://abacus.jasoncameron.dev';
   let counted=false; try{ counted=sessionStorage.getItem('cc-counted')==='1'; }catch(e){}
   const path=(live && !counted && !isOwner())?'hit':'get';
   try{
-    const r=await fetch(`${url}/${path}/chaechae-photobooth/visits`); if(!r.ok) return;
+    if(path==='hit' && EVENT) hit('ev-visits',v=>showStat('ev-visits',v));
+    const r=await cfetch(`${url}/${path}/chaechae-photobooth/visits`); if(!r.ok) return;
     const j=await r.json(); if(typeof j.value!=='number') return;
     if(path==='hit'){ try{ sessionStorage.setItem('cc-counted','1'); }catch(e){} }
     $('#visits b').textContent=j.value.toLocaleString('th-TH'); $('#visits').hidden=false;
