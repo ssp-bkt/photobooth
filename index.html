@@ -246,7 +246,9 @@ dialog#vidDlg::backdrop{background:rgba(16,14,20,.6);-webkit-backdrop-filter:blu
 .stickers button{border:0;background:var(--chip);border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:0;transition:transform .1s}
 .stickers button.art img{width:84%;height:84%}
 .stickers button.meme{grid-column:1/-1;aspect-ratio:auto;justify-content:flex-start;padding:11px 14px;font-size:14px;font-weight:600;text-align:left}
-.bfrow{margin-top:12px;position:relative}
+.bfrow{margin-top:10px;position:relative}
+.viewrow{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}.viewrow>span{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.viewrow .seg{width:auto;flex:0 1 260px}.viewrow .seg button{padding:6px 12px;font-size:12.5px}
 .bfrow.can-r .bfilters{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent)}
 .bfrow.can-l .bfilters{-webkit-mask-image:linear-gradient(90deg,transparent,#000 56px);mask-image:linear-gradient(90deg,transparent,#000 56px)}
 .bfrow.can-l.can-r .bfilters{-webkit-mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent)}
@@ -393,13 +395,13 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
         <button class="camtimer" id="camTimer" aria-label="ตั้งเวลาถ่าย"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg><b id="camTimerText">3 วิ</b></button>
         <button class="camfull" id="camFull" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><b>เต็มจอ</b></button>
       </div>
+      <div class="viewrow"><span>มุมมองตอนถ่าย</span><div class="seg" id="viewSeg"></div></div>
       <div class="bfrow" id="bfRow"><button class="bfnav prev" id="bfPrev" aria-label="ฟิลเตอร์ก่อนหน้า"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="bfilters" id="boothFilters"></div><button class="bfnav next" id="bfNext" aria-label="ดูฟิลเตอร์เพิ่ม"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
       <div class="lpwrap"><div class="lp" id="lp"></div><div class="lptext" id="lpText"></div><button class="upbtn" id="uploadBtn" aria-label="อัปโหลดรูปจากเครื่อง"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-5-6 6M3 18l4-4 3 3"/><path d="M17 2v6M14.5 4.5L17 2l2.5 2.5" stroke-width="2"/></svg><span><b>อัปโหลดรูป</b>จากเครื่องแทนกล้อง</span></button></div>
     </div>
 
     <div class="card side">
       <div class="panels">
-        <div class="sec"><div class="label">มุมมองตอนถ่าย <span>ดูในช่อง = เห็นรูปที่ถ่ายไปแล้วด้วย</span></div><div class="seg" id="viewSeg"></div></div>
         <div class="sec"><div class="label">เลือกช่อง</div><div class="layouts" id="layoutCards"></div></div>
         <div class="sec"><label class="switch">กลับด้านแบบกระจก<input type="checkbox" id="mirror" checked></label></div>
         <div class="hint">ถ่ายรูปก่อน แล้วค่อยแต่ง ใส่ฟิลเตอร์ กรอบ และสติ๊กเกอร์ในหน้าถัดไป</div>
