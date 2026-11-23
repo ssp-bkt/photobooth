@@ -315,7 +315,12 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .supportbtn:hover{color:var(--ink)}
 dialog#supportDlg{border:0;border-radius:24px;padding:16px;background:var(--surface);color:var(--ink);max-width:min(440px,calc(100% - 24px));box-shadow:0 30px 80px rgba(0,0,0,.3)}
 dialog#supportDlg::backdrop{background:rgba(20,16,24,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-.support .thx{margin-top:4px;color:var(--ink2)}
+.support .thx{margin-top:6px;color:var(--ink2)}
+#supportDlg .support{flex-direction:column;text-align:center;gap:12px;width:auto;padding:18px 20px 14px}
+#supportDlg .support img{width:168px;height:168px}
+#supportDlg .support b{font-size:16px;margin-bottom:6px}
+#supportDlg .support .l{display:block;white-space:nowrap;font-size:clamp(12px,3.4vw,13.5px);line-height:1.7;color:var(--ink2)}
+dialog#supportDlg{width:max-content;max-width:calc(100% - 24px);padding:14px 14px 12px}
 .support{display:flex;align-items:center;gap:16px;width:max-content;max-width:100%;box-sizing:border-box;margin:0 auto;padding:12px 18px 12px 12px;border-radius:20px;background:var(--surface);border:1px solid rgba(0,0,0,.06);text-align:left}
 .support img{width:116px;height:116px;flex:none;border-radius:10px}
 .support b{display:block;font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:2px}.support span{display:block;font-size:12.5px;line-height:1.6}.support i{font-style:normal;white-space:nowrap}
@@ -372,7 +377,7 @@ dialog#maker::backdrop,dialog#printer::backdrop{background:rgba(20,16,24,.45);-w
 <dialog id="supportDlg" aria-label="สนับสนุนผู้สร้าง">
   <div class="support">
     <img id="supportQR" src="donate-qr.png" width="353" height="353" alt="QR พร้อมเพย์ สนับสนุนผู้สร้าง" loading="lazy">
-    <div><b>สนับสนุนผู้สร้าง ✦</b><span><i>ชอบ chaechae ไหม</i> <i>ใช้ฟรีได้เสมอ</i><br><i>อยากเลี้ยงขนมคนทำ</i> <i>สแกนด้วยแอปธนาคารได้เลย</i></span><span class="thx">ขอบคุณมากนะ ♡</span></div>
+    <div><b>สนับสนุนผู้สร้าง ✦</b><span class="l">ชอบ chaechae ไหม ใช้ฟรีได้เสมอ</span><span class="l">อยากเลี้ยงขนมคนทำ สแกนด้วยแอปธนาคารได้เลย</span><span class="thx">ขอบคุณมากนะ ♡</span></div>
   </div>
   <button class="btn" id="supportClose" style="width:100%;margin-top:10px">ปิด</button>
 </dialog>
